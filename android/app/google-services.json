@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1098462697075",
+    "project_id": "kot-pos-app",
+    "storage_bucket": "kot-pos-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098462697075:android:1485ba813208cec40a3c06",
+        "android_client_info": {
+          "package_name": "com.example.kot_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQrQXqjqLEmmvF-m_MDJo312MnXQKGAtY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098462697075:android:4e986c01f88eb58e0a3c06",
+        "android_client_info": {
+          "package_name": "com.example.my_pos_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQrQXqjqLEmmvF-m_MDJo312MnXQKGAtY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
