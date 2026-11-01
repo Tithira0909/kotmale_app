@@ -4,20 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
 import 'add_product_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  // 👇 Let MainNavigation call this to open AddProductScreen
-  void addProduct(BuildContext context) async {
-    final state = context.findAncestorStateOfType<_HomeScreenState>();
-    state?._addProduct();
-  }
+class ProductScreen extends StatefulWidget {
+  const ProductScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _ProductScreenState extends State<ProductScreen> {
   List<Product> _products = [];
 
   @override

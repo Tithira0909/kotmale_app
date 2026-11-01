@@ -62,17 +62,19 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
       bool ok = await BluetoothService.connect(d.macAdress);
       if (ok) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('printer_name', d.name ?? 'Unknown');
-        await prefs.setString('printer_mac', d.macAdress ?? '');
+        await prefs.setString('printer_name', d.name);
+        await prefs.setString('printer_mac', d.macAdress);
 
+        if (!mounted) return;
         setState(() {
-          selected = {'name': d.name ?? 'Unknown', 'mac': d.macAdress ?? ''};
+          selected = {'name': d.name, 'mac': d.macAdress};
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('✅ Connected and saved: ${d.name}')),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('❌ Failed to connect: ${d.name}')),
         );
@@ -167,8 +169,8 @@ Thank you for testing!
                     itemBuilder: (_, i) {
                       final d = devices[i];
                       return ListTile(
-                        title: Text(d.name ?? 'Unknown'),
-                        subtitle: Text(d.macAdress ?? ''),
+                        title: Text(d.name),
+                        subtitle: Text(d.macAdress),
                         trailing: ElevatedButton(
                           onPressed: () => _connectPrinter(d),
                           style: ElevatedButton.styleFrom(

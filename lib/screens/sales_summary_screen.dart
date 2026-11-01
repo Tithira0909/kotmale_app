@@ -17,7 +17,7 @@ class SalesSummaryScreen extends StatefulWidget {
 class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
   bool _loading = true;
 
-  // rows: { shopKey, shopName, cash, creditSales, collection }
+  // Rows: { shopKey, shopName, cash, creditSales, collection }
   List<Map<String, dynamic>> rows = [];
   List<Map<String, dynamic>> _filteredRows = [];
 
@@ -25,11 +25,12 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
   double totalCreditSales = 0.0;
   double totalCollection = 0.0;
 
-  // UI
-  final TextEditingController _searchCtrl = TextEditingController();
+  bool _isTableView = true;
 
-  // date filter
+  final TextEditingController _searchCtrl = TextEditingController();
   DateTime _selectedDate = DateTime.now();
+
+  final NumberFormat _currencyFormat = NumberFormat('#,##0.00', 'en_US');
 
   @override
   void initState() {
@@ -43,7 +44,7 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
     super.dispose();
   }
 
-  // ---------- helpers ----------
+  // ---------- Helpers ----------
   String _normKey(String s) =>
       s.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
 
@@ -69,16 +70,18 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  String _money(double v) => 'LKR ${v.toStringAsFixed(2)}';
+  String _formatLkr(double amount) {
+    return 'LKR ${_currencyFormat.format(amount)}';
+  }
 
-  // ✅ Cash/Collection column = cash sales + collections (repayments)
+  /// ✅ Cash/Collection column = cash sales + collections (repayments)
   double _cashCollection(Map<String, dynamic> r) =>
       (r["cash"] as double) + (r["collection"] as double);
 
   /// ✅ CREDIT COLLECTION only (repayments)
   double _getCreditApplied(Map<String, dynamic> c) {
     if (c.containsKey('creditApplied')) return _toDouble(c['creditApplied']);
-    return _toDouble(c['amount']); // legacy fallback
+    return _toDouble(c['amount']);
   }
 
   void _applyFilter() {
@@ -89,7 +92,7 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
       return q.isEmpty ? true : name.contains(q);
     }).toList();
 
-    // sort: biggest total first (cash/collection + credit sales)
+    // Sort: biggest total first (cash/collection + credit sales)
     list.sort(
       (a, b) => (_cashCollection(b) + (b["creditSales"] as double)).compareTo(
         _cashCollection(a) + (a["creditSales"] as double),
@@ -112,6 +115,13 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
     await _calculateShopSummary(forDate: _selectedDate);
   }
 
+  void _changeDateByDays(int days) {
+    setState(() {
+      _selectedDate = _selectedDate.add(Duration(days: days));
+    });
+    _calculateShopSummary(forDate: _selectedDate);
+  }
+
   void _openDailySummary() {
     Navigator.push(
       context,
@@ -124,6 +134,7 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
   /// - Credit = invoice total where paymentType == Credit
   /// - Collection = collections (creditApplied/amount)
   Future<void> _calculateShopSummary({required DateTime forDate}) async {
+    if (!mounted) return;
     setState(() => _loading = true);
 
     final prefs = await SharedPreferences.getInstance();
@@ -137,7 +148,7 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
 
     final Map<String, Map<String, dynamic>> map = {};
 
-    // invoices for date
+    // Invoices for date
     for (final invAny in invoices) {
       if (invAny is! Map) continue;
       final inv = invAny.cast<String, dynamic>();
@@ -169,7 +180,7 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
       }
     }
 
-    // collections for date (repayments)
+    // Collections for date (repayments)
     for (final cAny in collections) {
       if (cAny is! Map) continue;
       final c = cAny.cast<String, dynamic>();
@@ -198,12 +209,14 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
     final list = map.values.toList();
 
     double tCash = 0.0, tCredit = 0.0, tCol = 0.0;
+
     for (final r in list) {
       tCash += (r["cash"] as double);
       tCredit += (r["creditSales"] as double);
       tCol += (r["collection"] as double);
     }
 
+    if (!mounted) return;
     setState(() {
       rows = list;
       totalCash = tCash;
@@ -218,17 +231,24 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
   // ---------------- PRINT MODE ----------------
   Future<void> _printSalesSummary() async {
     if (_filteredRows.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('No data to print')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No sales data available to print for this date'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
     final prefs = await SharedPreferences.getInstance();
     final printerMac = prefs.getString('printer_mac');
     if (printerMac == null || printerMac.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Connect a printer first.')),
+        const SnackBar(
+          content: Text('⚠️ Please connect a printer first in Printer Settings'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
@@ -238,14 +258,17 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
       if (!connected) {
         final ok = await BluetoothService.connect(printerMac);
         if (!ok) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('❌ Printer connection failed')),
+            const SnackBar(
+              content: Text('❌ Printer connection failed'),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
           return;
         }
       }
 
-      // 40 chars width (works with most 58mm/80mm libs)
       const int w = 40;
 
       String line([String ch = '-']) => List.filled(w, ch).join();
@@ -257,13 +280,12 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
         return text.padLeft(left + text.length);
       }
 
-      // columns: 3 + 13 + 12 + 12 = 40
       String row4(String no, String shop, String cashCol, String credit) {
         String fit(String s, int len) {
           s = s.trim();
           if (s.length <= len) return s;
           if (len <= 1) return s.substring(0, len);
-          return s.substring(0, len - 1) + '.';
+          return '${s.substring(0, len - 1)}.';
         }
 
         final cNo = fit(no, 3).padRight(3);
@@ -280,7 +302,7 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
 
       final buf = StringBuffer();
       buf.writeln(center('CHINTHAKA DISTRIBUTORS'));
-      buf.writeln(center('SALES SUMMARY'));
+      buf.writeln(center('SALES SUMMARY REPORT'));
       buf.writeln(center('Date: $dateStr   Time: $timeStr'));
       buf.writeln(line());
       buf.writeln(row4('No', 'Shop', 'Cash/Col', 'Credit'));
@@ -319,252 +341,728 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('🖨️ Sales Summary printed')),
+        const SnackBar(
+          content: Text('🖨️ Sales Summary report printed successfully'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Printer error: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Printer error: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
-  // ---------------- UI TABLE (NICELY DESIGNED) ----------------
-  Widget _cell(
-    String text, {
-    bool header = false,
-    bool right = false,
-    Color? bg,
-    bool bold = false,
-  }) {
-    return Container(
-      height: header ? 46 : 54,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      alignment: right ? Alignment.centerRight : Alignment.centerLeft,
-      color: bg,
-      child: Text(
-        text,
-        style: TextStyle(
-          fontWeight: header || bold ? FontWeight.w800 : FontWeight.w600,
-          fontSize: header ? 13.5 : 13,
-          color: header ? Colors.black : Colors.black87,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _niceTable() {
-    final totalCashCol = totalCash + totalCollection;
-
-    final headerBg = Colors.blueGrey.withOpacity(0.12);
-    final zebraA = Colors.white;
-    final zebraB = Colors.blueGrey.withOpacity(0.05);
-    final totalBg = Colors.blueGrey.withOpacity(0.16);
-
-    final border = TableBorder.all(
-      color: Colors.black.withOpacity(0.55),
-      width: 1,
-    );
-
-    final tableRows = <TableRow>[
-      TableRow(
-        children: [
-          _cell('No', header: true, bg: headerBg),
-          _cell('Shop Name', header: true, bg: headerBg),
-          _cell('Cash / Collection', header: true, bg: headerBg, right: true),
-          _cell('Credit payments', header: true, bg: headerBg, right: true),
-        ],
-      ),
-      ...List.generate(_filteredRows.length, (i) {
-        final r = _filteredRows[i];
-        final shop = r["shopName"]?.toString() ?? 'Unknown';
-        final cashCol = _cashCollection(r);
-        final credit = (r["creditSales"] as double);
-        final bg = (i % 2 == 0) ? zebraA : zebraB;
-
-        return TableRow(
-          children: [
-            _cell('${i + 1}', bg: bg),
-            _cell(shop, bg: bg),
-            _cell(_money(cashCol), bg: bg, right: true),
-            _cell(_money(credit), bg: bg, right: true, bold: credit > 0),
-          ],
-        );
-      }),
-      TableRow(
-        children: [
-          _cell('', header: true, bg: totalBg),
-          _cell('TOTAL', header: true, bg: totalBg),
-          _cell(_money(totalCashCol), header: true, bg: totalBg, right: true),
-          _cell(
-            _money(totalCreditSales),
-            header: true,
-            bg: totalBg,
-            right: true,
-          ),
-        ],
-      ),
-    ];
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.black12),
-          color: Colors.white,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x11000000),
-              blurRadius: 10,
-              offset: Offset(0, 6),
-            ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 760),
-            child: Table(
-              border: border,
-              columnWidths: const {
-                0: FixedColumnWidth(60), // No
-                1: FlexColumnWidth(1.5), // Shop
-                2: FlexColumnWidth(1.1), // Cash/Col
-                3: FlexColumnWidth(1.1), // Credit
-              },
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-              children: tableRows,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  double get grandTotalRevenue => totalCash + totalCollection + totalCreditSales;
 
   @override
   Widget build(BuildContext context) {
-    final dateLabel = DateFormat('MMM dd, yyyy').format(_selectedDate);
-
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: const Text('Sales Summary'),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.print, color: Colors.green),
-            tooltip: 'Print',
+            icon: const Icon(Icons.print_outlined),
+            tooltip: 'Print Report',
             onPressed: _printSalesSummary,
           ),
           IconButton(
-            icon: const Icon(Icons.date_range),
-            tooltip: 'Pick date',
-            onPressed: _pickDate,
+            icon: const Icon(Icons.analytics_outlined),
+            tooltip: 'Daily History',
+            onPressed: _openDailySummary,
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Reload',
             onPressed: () => _calculateShopSummary(forDate: _selectedDate),
           ),
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            tooltip: 'Daily summary',
-            onPressed: _openDailySummary,
-          ),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Date: $dateLabel',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+          : RefreshIndicator(
+              onRefresh: () => _calculateShopSummary(forDate: _selectedDate),
+              child: CustomScrollView(
+                slivers: [
+                  // --- Date Navigation & Executive Dashboard ---
+                  SliverToBoxAdapter(child: _buildHeaderDashboard()),
+
+                  // --- Search & View Switcher ---
+                  SliverToBoxAdapter(child: _buildControlsBar()),
+
+                  // --- Data Content ---
+                  _filteredRows.isEmpty
+                      ? SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: _buildEmptyState(),
+                        )
+                      : SliverPadding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
                           ),
+                          sliver: _isTableView
+                              ? SliverToBoxAdapter(child: _buildTableView())
+                              : SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (ctx, i) =>
+                                        _buildShopSalesCard(_filteredRows[i], i),
+                                    childCount: _filteredRows.length,
+                                  ),
+                                ),
                         ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                ],
+              ),
+            ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _printSalesSummary,
+        backgroundColor: Colors.indigo.shade800,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.print),
+        label: const Text(
+          'Print Report',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  // ---------- UI Widgets ----------
+
+  Widget _buildHeaderDashboard() {
+    final isNarrow = MediaQuery.of(context).size.width < 380;
+    final dateFormatted = DateFormat(
+      isNarrow ? 'EEE, MMM dd, yyyy' : 'EEEE, MMM dd, yyyy',
+    ).format(_selectedDate);
+    final totalCashCol = totalCash + totalCollection;
+
+    return Container(
+      margin: EdgeInsets.all(isNarrow ? 10 : 14),
+      padding: EdgeInsets.all(isNarrow ? 12 : 18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.indigo.shade900,
+            Colors.indigo.shade700,
+            Colors.blue.shade800,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.indigo.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Date selector row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: Colors.white70,
+                  size: 18,
+                ),
+                onPressed: () => _changeDateByDays(-1),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: _pickDate,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.calendar_month,
+                        color: Colors.white,
+                        size: 20,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.blueGrey.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.black12),
-                        ),
+                      const SizedBox(width: 8),
+                      Flexible(
                         child: Text(
-                          '${_filteredRows.length} shops',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                          dateFormatted,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: isNarrow ? 13 : 15,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white70,
+                  size: 18,
+                ),
+                onPressed: () => _changeDateByDays(1),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(color: Colors.white24, height: 1),
+          const SizedBox(height: 14),
 
-                  TextField(
-                    controller: _searchCtrl,
-                    onChanged: (_) => _applyFilter(),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.close),
-                        tooltip: 'Clear',
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          _applyFilter();
-                        },
-                      ),
-                      labelText: 'Search shop...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      isDense: true,
+          // Total Daily Sales
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Flexible(
+                child: Text(
+                  'TOTAL DAILY REVENUE',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                flex: 2,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    _formatLkr(grandTotalRevenue),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
 
-                  const SizedBox(height: 12),
-
-                  Expanded(
-                    child: _filteredRows.isEmpty
-                        ? Center(
+          // Cash vs Credit breakdown cards
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet,
+                            color: Colors.lightGreenAccent,
+                            size: 16,
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(
                             child: Text(
-                              'No data found for $dateLabel',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
+                              'Cash & Collection',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                          )
-                        : _niceTable(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _formatLkr(totalCashCol),
+                          style: const TextStyle(
+                            color: Colors.lightGreenAccent,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.credit_score,
+                            color: Colors.amberAccent,
+                            size: 16,
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Credit Issued',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _formatLkr(totalCreditSales),
+                          style: const TextStyle(
+                            color: Colors.amberAccent,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-                  const SizedBox(height: 10),
-
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.print),
-                    label: const Text('Print Sales Summary'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(45),
-                      backgroundColor: Colors.blueAccent,
-                    ),
-                    onPressed: _printSalesSummary,
+  Widget _buildControlsBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
+              child: TextField(
+                controller: _searchCtrl,
+                onChanged: (_) => _applyFilter(),
+                decoration: InputDecoration(
+                  hintText: 'Search shop in summary...',
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 14,
+                  ),
+                  prefixIcon: const Icon(Icons.search, color: Colors.indigo),
+                  suffixIcon: _searchCtrl.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            _applyFilter();
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                ),
+              ),
             ),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(
+                _isTableView ? Icons.grid_view_rounded : Icons.table_chart_rounded,
+                color: Colors.indigo,
+              ),
+              tooltip: _isTableView ? 'Switch to Cards' : 'Switch to Table',
+              onPressed: () => setState(() => _isTableView = !_isTableView),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableView() {
+    final totalCashCol = totalCash + totalCollection;
+
+    final headerBg = Colors.indigo.shade800;
+    final zebraA = Colors.white;
+    final zebraB = Colors.indigo.shade50.withOpacity(0.3);
+    final totalBg = Colors.indigo.shade100;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+          final narrow = constraints.maxWidth < 420;
+          _narrowTable = narrow;
+          // Fit the screen; only scroll horizontally on very small widths.
+          final tableWidth =
+              constraints.maxWidth < 340 ? 340.0 : constraints.maxWidth;
+          return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: tableWidth,
+            child: Table(
+              columnWidths: {
+                0: FixedColumnWidth(narrow ? 30 : 50),
+                1: const FlexColumnWidth(1.4),
+                2: const FlexColumnWidth(1.3),
+                3: const FlexColumnWidth(1.3),
+              },
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              children: [
+                // Header Row
+                TableRow(
+                  decoration: BoxDecoration(color: headerBg),
+                  children: [
+                    _cell('#', header: true, color: Colors.white),
+                    _cell('Shop Name', header: true, color: Colors.white),
+                    _cell(
+                      narrow ? 'Cash/Col' : 'Cash & Collection',
+                      header: true,
+                      right: true,
+                      color: Colors.white,
+                    ),
+                    _cell(
+                      narrow ? 'Credit' : 'Credit Issued',
+                      header: true,
+                      right: true,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+                // Rows
+                ...List.generate(_filteredRows.length, (i) {
+                  final r = _filteredRows[i];
+                  final shop = r["shopName"]?.toString() ?? 'Unknown';
+                  final cashCol = _cashCollection(r);
+                  final credit = (r["creditSales"] as double);
+                  final bg = (i % 2 == 0) ? zebraA : zebraB;
+
+                  return TableRow(
+                    decoration: BoxDecoration(color: bg),
+                    children: [
+                      _cell('${i + 1}'),
+                      _cell(shop, bold: true),
+                      _cell(
+                        _formatAmt(cashCol),
+                        right: true,
+                        color: Colors.teal.shade800,
+                      ),
+                      _cell(
+                        _formatAmt(credit),
+                        right: true,
+                        bold: credit > 0,
+                        color: credit > 0
+                            ? Colors.red.shade700
+                            : Colors.grey.shade600,
+                      ),
+                    ],
+                  );
+                }),
+                // Total Summary Row
+                TableRow(
+                  decoration: BoxDecoration(color: totalBg),
+                  children: [
+                    _cell('', header: true),
+                    _cell('TOTAL', header: true, bold: true),
+                    _cell(
+                      _formatAmt(totalCashCol),
+                      header: true,
+                      right: true,
+                      color: Colors.teal.shade900,
+                    ),
+                    _cell(
+                      _formatAmt(totalCreditSales),
+                      header: true,
+                      right: true,
+                      color: Colors.red.shade900,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          );
+          },
+        ),
+      ),
+    );
+  }
+
+  bool _narrowTable = false;
+
+  /// Drops the "LKR" prefix in narrow tables to save space.
+  String _formatAmt(double v) =>
+      _narrowTable ? _currencyFormat.format(v) : _formatLkr(v);
+
+  Widget _cell(
+    String text, {
+    bool header = false,
+    bool right = false,
+    bool bold = false,
+    Color? color,
+  }) {
+    final textWidget = Text(
+      text,
+      style: TextStyle(
+        fontWeight: header || bold ? FontWeight.bold : FontWeight.normal,
+        fontSize: _narrowTable ? 12 : 13,
+        color: color ?? Colors.black87,
+      ),
+      maxLines: 1,
+      overflow: right ? TextOverflow.visible : TextOverflow.ellipsis,
+    );
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: _narrowTable ? 6 : 10,
+        vertical: 12,
+      ),
+      child: Align(
+        alignment: right ? Alignment.centerRight : Alignment.centerLeft,
+        // Amounts scale down instead of being cut off.
+        child: right
+            ? FittedBox(fit: BoxFit.scaleDown, child: textWidget)
+            : textWidget,
+      ),
+    );
+  }
+
+  Widget _buildShopSalesCard(Map<String, dynamic> r, int index) {
+    final shop = r["shopName"]?.toString() ?? 'Unknown';
+    final cashCol = _cashCollection(r);
+    final credit = (r["creditSales"] as double);
+    final totalShopRevenue = cashCol + credit;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: Colors.indigo.shade100,
+                child: Text(
+                  '${index + 1}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo.shade800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  shop,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _formatLkr(totalShopRevenue),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.indigo,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Divider(height: 1),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 12,
+            runSpacing: 6,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.account_balance_wallet,
+                    size: 14,
+                    color: Colors.teal,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Cash & Col: ${_formatLkr(cashCol)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.teal.shade800,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.credit_score,
+                    size: 14,
+                    color: credit > 0 ? Colors.red : Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Credit: ${_formatLkr(credit)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: credit > 0 ? Colors.red.shade700 : Colors.grey,
+                      fontWeight: credit > 0 ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final dateStr = DateFormat('MMM dd, yyyy').format(_selectedDate);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.indigo.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.receipt_long_outlined,
+                size: 48,
+                color: Colors.indigo.shade400,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No Sales Data for $dateStr',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No invoices or collection records were logged on this date.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () {
+                _searchCtrl.clear();
+                setState(() => _selectedDate = DateTime.now());
+                _calculateShopSummary(forDate: _selectedDate);
+              },
+              icon: const Icon(Icons.today),
+              label: const Text('Go to Today'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

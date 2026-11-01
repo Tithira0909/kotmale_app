@@ -155,8 +155,9 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
         filteredInvoices = [];
       });
     } finally {
-      if (!mounted) return;
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
