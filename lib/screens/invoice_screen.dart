@@ -464,17 +464,15 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                               color: Colors.white, size: 16),
                           const SizedBox(width: 4),
                         ],
-                        Flexible(
-                          child: Text(
-                            'Cash',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: paymentType == 'Cash'
-                                  ? Colors.white
-                                  : _kInk,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
+                        Text(
+                          'Cash',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: paymentType == 'Cash'
+                                ? Colors.white
+                                : _kInk,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
                           ),
                         ),
                       ],
@@ -515,17 +513,15 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                               color: Colors.white, size: 16),
                           const SizedBox(width: 4),
                         ],
-                        Flexible(
-                          child: Text(
-                            'Credit',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: paymentType == 'Credit'
-                                  ? Colors.white
-                                  : _kInk,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                            ),
+                        Text(
+                          'Credit',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: paymentType == 'Credit'
+                                ? Colors.white
+                                : _kInk,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
                           ),
                         ),
                       ],
