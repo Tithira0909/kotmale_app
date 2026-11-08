@@ -112,9 +112,8 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     final collectionStr = prefs.getString('collection_history');
 
     final List<dynamic> allInvoices = jsonDecode(invoiceStr);
-    final List<dynamic> allCollections = collectionStr != null
-        ? jsonDecode(collectionStr)
-        : [];
+    final List<dynamic> allCollections =
+        collectionStr != null ? jsonDecode(collectionStr) : [];
 
     final opening = await _getOpeningBalance(prefs);
 
@@ -222,9 +221,8 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
     // cache shop_credits as outstanding
     final creditData = prefs.getString('shop_credits');
-    final Map<String, dynamic> credits = creditData != null
-        ? jsonDecode(creditData)
-        : {};
+    final Map<String, dynamic> credits =
+        creditData != null ? jsonDecode(creditData) : {};
     credits[_shopKey] = outstanding;
     await prefs.setString('shop_credits', jsonEncode(credits));
   }
@@ -315,9 +313,8 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
     // update cache so ShopListScreen matches
     final creditData = prefs.getString('shop_credits');
-    final Map<String, dynamic> credits = creditData != null
-        ? jsonDecode(creditData)
-        : {};
+    final Map<String, dynamic> credits =
+        creditData != null ? jsonDecode(creditData) : {};
     credits[_shopKey] = computedBalance;
     await prefs.setString('shop_credits', jsonEncode(credits));
 
@@ -384,18 +381,88 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     final controller = TextEditingController(
       text: currentBalance.toStringAsFixed(2),
     );
+    String selectedPaymentMethod = 'Cash';
+    final List<String> paymentMethods = ['Cash', 'Cheque'];
+    String chequeNumber = '';
+    String chequeDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-    final result = await showDialog<double>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Collection (Pay Credit Balance)'),
-        content: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Enter amount received (LKR)',
-            border: OutlineInputBorder(),
-          ),
+        title: const Text('Payment Statement'),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedPaymentMethod,
+                    items: paymentMethods.map((String method) {
+                      return DropdownMenuItem<String>(
+                        value: method,
+                        child: Text(method),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedPaymentMethod = newValue!;
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Payment Method',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: controller,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Enter amount received (LKR)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  if (selectedPaymentMethod == 'Cheque') ...[
+                    const SizedBox(height: 10),
+                    TextField(
+                      onChanged: (value) => chequeNumber = value,
+                      decoration: const InputDecoration(
+                        labelText: 'Cheque Number',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: TextEditingController(text: chequeDate),
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Cheque Date',
+                        border: OutlineInputBorder(),
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            chequeDate =
+                                DateFormat('yyyy-MM-dd').format(picked);
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
         ),
         actions: [
           TextButton(
@@ -405,7 +472,12 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
           ElevatedButton(
             onPressed: () {
               final val = double.tryParse(controller.text.trim()) ?? 0.0;
-              Navigator.pop(ctx, val);
+              Navigator.pop(ctx, {
+                'amount': val,
+                'method': selectedPaymentMethod,
+                'chequeNumber': chequeNumber,
+                'chequeDate': chequeDate,
+              });
             },
             child: const Text('Save'),
           ),
@@ -415,43 +487,62 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
     if (result == null) return;
 
-    final paidAmount = _round2(result);
+    final paidAmount = _round2(result['amount'] as double);
     if (paidAmount <= 0) return;
+
+    final method = result['method'] as String;
+    final chqNum = result['chequeNumber'] as String;
+    final chqDate = result['chequeDate'] as String;
 
     final prefs = await SharedPreferences.getInstance();
 
     final oldBal = _round2(currentBalance < 0 ? 0.0 : currentBalance);
 
-    final applied = _round2(paidAmount > oldBal ? oldBal : paidAmount);
-    final newBal = _round2((oldBal - applied) < 0 ? 0.0 : (oldBal - applied));
-    final cashAdv = _round2(
-      paidAmount - applied > 0 ? paidAmount - applied : 0,
-    );
+    // If cheque, we don't apply it to credit balance until cleared, but we record it.
+    // The requirement says: "For Cheque, deduct only after the cheque is cleared."
+    // However, the collection history should reflect it.
+    double applied = 0.0;
+    double newBal = oldBal;
+
+    if (method == 'Cash') {
+      applied = _round2(paidAmount > oldBal ? oldBal : paidAmount);
+      newBal = _round2((oldBal - applied) < 0 ? 0.0 : (oldBal - applied));
+    }
+
+    double cashAdv = 0.0;
+    if (method == 'Cash') {
+      cashAdv = _round2(
+        paidAmount - applied > 0 ? paidAmount - applied : 0,
+      );
+    }
 
     final collectionData = prefs.getString('collection_history');
-    final List<dynamic> allCollections = collectionData != null
-        ? jsonDecode(collectionData)
-        : [];
+    final List<dynamic> allCollections =
+        collectionData != null ? jsonDecode(collectionData) : [];
 
     allCollections.add({
       "shopName": widget.shopName,
-      "amount": paidAmount, // cash received
+      "amount": paidAmount, // cash/cheque received
       "creditApplied": applied, // applied to credit
       "date": DateTime.now().toIso8601String(),
       "oldBalance": oldBal,
       "newBalance": newBal,
-      "unapplied":
-          cashAdv, // keep for backward display, but now equals cash advance
+      "unapplied": cashAdv,
+      "method": method,
+      "chequeNumber": chqNum,
+      "chequeDate": chqDate,
+      "chequeCleared": method == 'Cash', // auto clear cash
     });
 
     await prefs.setString('collection_history', jsonEncode(allCollections));
 
-    final creditData = prefs.getString('shop_credits');
-    final Map<String, dynamic> credits = creditData != null
-        ? jsonDecode(creditData)
-        : {};
-    credits[_shopKey] = newBal;
-    await prefs.setString('shop_credits', jsonEncode(credits));
+    if (method == 'Cash') {
+      final creditData = prefs.getString('shop_credits');
+      final Map<String, dynamic> credits =
+          creditData != null ? jsonDecode(creditData) : {};
+      credits[_shopKey] = newBal;
+      await prefs.setString('shop_credits', jsonEncode(credits));
+    }
 
     if (!mounted) return;
     setState(() {
@@ -461,15 +552,24 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     await _loadShopDetails(showLoader: false);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          newBal == 0
-              ? '✅ Collection saved! Credit balance cleared.'
-              : '💵 Collection saved. New credit balance: LKR ${newBal.toStringAsFixed(2)}',
+    if (method == 'Cash') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            newBal == 0
+                ? '✅ Collection saved! Credit balance cleared.'
+                : '💵 Collection saved. New credit balance: LKR ${newBal.toStringAsFixed(2)}',
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('🧾 Cheque recorded. Balance will update when cleared.'),
+        ),
+      );
+    }
   }
 
   Future<void> _clearShopHistory() async {
@@ -576,7 +676,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
       final buf = StringBuffer();
       buf.writeln('       Chinthaka Distributors');
-      buf.writeln('   Shop Account Summary Report');
+      buf.writeln('   Payment Statement');
       buf.writeln('------------------------------------');
       buf.writeln('Shop: ${widget.shopName}');
       buf.writeln(
@@ -600,6 +700,19 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
         buf.writeln('Cash Advance: LKR ${totalAdvance.toStringAsFixed(2)}');
       }
       buf.writeln('------------------------------------');
+      if (collectionHistory.isNotEmpty) {
+        buf.writeln('Recent Payments:');
+        for (var i = 0;
+            i < (collectionHistory.length > 5 ? 5 : collectionHistory.length);
+            i++) {
+          final c = (collectionHistory[i] as Map).cast<String, dynamic>();
+          final amt = _toDouble(c['amount']);
+          final date = _formatDate(c['date']);
+          final method = c['method']?.toString() ?? 'Cash';
+          buf.writeln('$date - $method: LKR ${amt.toStringAsFixed(2)}');
+        }
+        buf.writeln('------------------------------------');
+      }
       buf.writeln('Thank you!\n\n\n');
 
       await BluetoothService.printInvoice(buf.toString());
@@ -640,9 +753,8 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     final outstanding = isCreditInv && remainingCredit > 0;
     final dayBal = _toDouble(inv['_balanceAfter']);
 
-    final List itemsRaw = (inv['items'] is List)
-        ? (inv['items'] as List)
-        : const [];
+    final List itemsRaw =
+        (inv['items'] is List) ? (inv['items'] as List) : const [];
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -804,8 +916,8 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                     child: Text(
                       'Collection History',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -871,8 +983,8 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                     child: Text(
                       'Invoice History',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                   ),
                   const SizedBox(height: 6),

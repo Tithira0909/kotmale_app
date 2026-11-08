@@ -35,7 +35,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   // ── Colours matching the screenshot ──────────────────────────────────────
   static const Color _appBarBlue = Color(0xFF4285F4);
-  static const Color _navBarBg   = Color(0xFFF3EDF7); // lavender
+  static const Color _navBarBg = Color(0xFFF3EDF7); // lavender
   static const Color _selectedFg = Color(0xFF4285F4); // blue
   static const Color _unselectedFg = Color(0xFF9E9E9E); // grey
 
@@ -95,11 +95,14 @@ class _MainNavigationState extends State<MainNavigation> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(0, Icons.receipt_long_outlined, Icons.receipt_long, 'Invoice'),
-              _navItem(1, Icons.inventory_2_outlined,  Icons.inventory_2,  'Products'),
-              _navItem(2, Icons.store_mall_directory_outlined, Icons.store_mall_directory, 'Shops'),
-              _navItem(3, Icons.bar_chart_outlined,    Icons.bar_chart,    'Sales'),
-              _navItem(4, Icons.print_outlined,        Icons.print,        'Printer'),
+              _navItem(0, Icons.receipt_long_outlined, Icons.receipt_long,
+                  'Invoice'),
+              _navItem(
+                  1, Icons.inventory_2_outlined, Icons.inventory_2, 'Products'),
+              _navItem(2, Icons.store_mall_directory_outlined,
+                  Icons.store_mall_directory, 'Shops'),
+              _navItem(3, Icons.bar_chart_outlined, Icons.bar_chart, 'Sales'),
+              _navItem(4, Icons.print_outlined, Icons.print, 'Printer'),
             ],
           ),
         ),
@@ -107,7 +110,8 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  Widget _navItem(int index, IconData icon, IconData selectedIcon, String label) {
+  Widget _navItem(
+      int index, IconData icon, IconData selectedIcon, String label) {
     final bool selected = _currentIndex == index;
     final Color color = selected ? _selectedFg : _unselectedFg;
 

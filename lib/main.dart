@@ -3,8 +3,8 @@ import 'screens/main_navigation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  ErrorWidget.builder = (FlutterErrorDetails details) =>
-      const SizedBox.shrink();
+  ErrorWidget.builder =
+      (FlutterErrorDetails details) => const SizedBox.shrink();
 
   runApp(const KotmaleApp());
 }
@@ -31,11 +31,10 @@ class KotmaleApp extends StatelessWidget {
           elevation: 0,
           scrolledUnderElevation: 2,
         ),
-        cardTheme: CardTheme(
+        cardTheme: const CardThemeData(
           elevation: 1.5,
-          shadowColor: Colors.black.withOpacity(0.06),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
         ),
       ),

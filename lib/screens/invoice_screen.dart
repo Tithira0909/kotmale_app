@@ -14,14 +14,14 @@ import 'invoice_history_screen.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 // Colour palette (matches reference screenshot)
 // ─────────────────────────────────────────────────────────────────────────────
-const Color _kBg       = Color(0xFFF0EDF6); // lavender / off-white page bg
-const Color _kWhite    = Colors.white;
-const Color _kPurple   = Color(0xFF6750A4); // primary accent
+const Color _kBg = Color(0xFFF0EDF6); // lavender / off-white page bg
+const Color _kWhite = Colors.white;
+const Color _kPurple = Color(0xFF6750A4); // primary accent
 const Color _kLavender = Color(0xFFEBE4F7); // button fill / nav fill
-const Color _kInk      = Color(0xFF1D1B20); // dark charcoal text
-const Color _kGrey     = Color(0xFF79747E); // outline / hint
-const Color _kGreen    = Color(0xFF2E7D32); // balance positive
-const Color _kBorder   = Color(0xFFBDB6C8); // field border colour
+const Color _kInk = Color(0xFF1D1B20); // dark charcoal text
+const Color _kGrey = Color(0xFF79747E); // outline / hint
+const Color _kGreen = Color(0xFF2E7D32); // balance positive
+const Color _kBorder = Color(0xFFBDB6C8); // field border colour
 
 // ─────────────────────────────────────────────────────────────────────────────
 // InvoiceScreen
@@ -35,17 +35,17 @@ class InvoiceScreen extends StatefulWidget {
 
 class _InvoiceScreenState extends State<InvoiceScreen> {
   // ── Controllers & focus ───────────────────────────────────────────────────
-  final TextEditingController _shopCtrl  = TextEditingController();
-  final TextEditingController _qtyCtrl   = TextEditingController();
+  final TextEditingController _shopCtrl = TextEditingController();
+  final TextEditingController _qtyCtrl = TextEditingController();
   final FocusNode _shopFocus = FocusNode();
 
   // ── State ─────────────────────────────────────────────────────────────────
   Product? selectedProduct;
-  List<Product> allProducts   = [];
-  List<Product> invoiceItems  = [];
-  List<String>  allShops      = [];
-  double        _previousCredit = 0.0;
-  bool          includeBalanceBF = true;
+  List<Product> allProducts = [];
+  List<Product> invoiceItems = [];
+  List<String> allShops = [];
+  double _previousCredit = 0.0;
+  bool includeBalanceBF = true;
 
   // ── Formatter ─────────────────────────────────────────────────────────────
   final NumberFormat _fmt = NumberFormat('#,##0.00', 'en_US');
@@ -55,7 +55,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       s.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
 
   double _toDouble(dynamic v) => double.tryParse(v?.toString() ?? '') ?? 0.0;
-  double _round2(double v)   => double.parse(v.toStringAsFixed(2));
+  double _round2(double v) => double.parse(v.toStringAsFixed(2));
 
   String _fmtLkr(double amount) => 'LKR ${_fmt.format(amount)}';
 
@@ -94,7 +94,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   }
 
   Future<double> _computeShopCreditBalance(String shopName) async {
-    final prefs   = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final shopKey = _normKey(shopName);
 
     double opening = 0.0;
@@ -111,7 +111,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       final List all = jsonDecode(invStr);
       for (final invAny in all) {
         if (invAny is! Map) continue;
-        final inv     = invAny.cast<String, dynamic>();
+        final inv = invAny.cast<String, dynamic>();
         final invShop = _normKey(inv['shopName']?.toString() ?? '');
         if (invShop != shopKey) continue;
         final payType = (inv['paymentType']?.toString().trim() ?? '');
@@ -128,7 +128,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       final List cols = jsonDecode(colStr);
       for (final cAny in cols) {
         if (cAny is! Map) continue;
-        final c     = cAny.cast<String, dynamic>();
+        final c = cAny.cast<String, dynamic>();
         final cShop = _normKey(c['shopName']?.toString() ?? '');
         if (cShop != shopKey) continue;
         final applied = c.containsKey('creditApplied')
@@ -139,8 +139,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     }
 
     final issued = _round2(opening + creditInvoiceTotal);
-    final paid   = _round2(creditPaid);
-    final bal    = _round2((issued - paid) < 0 ? 0.0 : (issued - paid));
+    final paid = _round2(creditPaid);
+    final bal = _round2((issued - paid) < 0 ? 0.0 : (issued - paid));
     return bal;
   }
 
@@ -208,21 +208,22 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       return;
     }
 
-    final idx = invoiceItems.indexWhere((it) => it.name == selectedProduct!.name);
+    final idx =
+        invoiceItems.indexWhere((it) => it.name == selectedProduct!.name);
     if (idx != -1) {
       // Update qty; also update price in case it was overridden
       setState(() {
-        invoiceItems[idx].qty   += qty;
-        invoiceItems[idx].price  = price;
+        invoiceItems[idx].qty += qty;
+        invoiceItems[idx].price = price;
       });
     } else {
       setState(() {
         invoiceItems.add(
           Product(
-            id:    selectedProduct!.id,
-            name:  selectedProduct!.name,
+            id: selectedProduct!.id,
+            name: selectedProduct!.name,
             price: price,
-            qty:   qty,
+            qty: qty,
           ),
         );
       });
@@ -241,12 +242,13 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     });
   }
 
-  double get subtotal  => invoiceItems.fold(0.0, (s, p) => s + p.price * p.qty);
+  double get subtotal => invoiceItems.fold(0.0, (s, p) => s + p.price * p.qty);
   double get grandTotal => _round2(subtotal + _previousCredit);
 
   void _editItem(Product product) {
-    final qtyCtrl   = TextEditingController(text: product.qty.toString());
-    final priceCtrl = TextEditingController(text: product.price.toStringAsFixed(2));
+    final qtyCtrl = TextEditingController(text: product.qty.toString());
+    final priceCtrl =
+        TextEditingController(text: product.price.toStringAsFixed(2));
 
     showDialog(
       context: context,
@@ -259,7 +261,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             Expanded(
               child: Text(
                 'Edit ${product.name}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -273,7 +276,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
               decoration: InputDecoration(
                 labelText: 'Quantity',
                 prefixIcon: const Icon(Icons.numbers),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
               keyboardType: TextInputType.number,
             ),
@@ -283,9 +287,11 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
               decoration: InputDecoration(
                 labelText: 'Unit Price (LKR)',
                 prefixIcon: const Icon(Icons.payments_outlined),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
           ],
         ),
@@ -298,13 +304,15 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: _kPurple,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
-              final newQty   = int.tryParse(qtyCtrl.text.trim())    ?? product.qty;
-              final newPrice = double.tryParse(priceCtrl.text.trim()) ?? product.price;
+              final newQty = int.tryParse(qtyCtrl.text.trim()) ?? product.qty;
+              final newPrice =
+                  double.tryParse(priceCtrl.text.trim()) ?? product.price;
               setState(() {
-                product.qty   = newQty;
+                product.qty = newQty;
                 product.price = newPrice;
               });
               Navigator.pop(ctx);
@@ -322,7 +330,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       return;
     }
 
-    final prefs      = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final printerMac = prefs.getString('printer_mac');
     if (printerMac == null || printerMac.isEmpty) {
       if (!mounted) return;
@@ -348,6 +356,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         final left = ((lineWidth - text.length) / 2).floor();
         return text.padLeft(left + text.length);
       }
+
       String line(String ch) => List.filled(lineWidth, ch).join();
 
       final shopName = _shopCtrl.text.trim().isEmpty
@@ -367,10 +376,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       buf.writeln(line('-'));
 
       for (var p in invoiceItems) {
-        final name     = p.name.length > 12 ? p.name.substring(0, 12) : p.name;
-        final nameCol  = name.padRight(12);
-        final unitCol  = p.price.toStringAsFixed(2).padLeft(7);
-        final qtyCol   = p.qty.toString().padLeft(4);
+        final name = p.name.length > 12 ? p.name.substring(0, 12) : p.name;
+        final nameCol = name.padRight(12);
+        final unitCol = p.price.toStringAsFixed(2).padLeft(7);
+        final qtyCol = p.qty.toString().padLeft(4);
         final totalCol = (p.price * p.qty).toStringAsFixed(2).padLeft(7);
         buf.writeln(centerText('$nameCol $unitCol $qtyCol $totalCol'));
       }
@@ -383,7 +392,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
             'Credit Balance: LKR ${_previousCredit.toStringAsFixed(2)}'));
       }
 
-      buf.writeln(centerText('New Balance: LKR ${grandTotal.toStringAsFixed(2)}'));
+      buf.writeln(
+          centerText('New Balance: LKR ${grandTotal.toStringAsFixed(2)}'));
       buf.writeln(line('-'));
       buf.writeln(centerText('Thank you!'));
       buf.writeln('\n');
@@ -411,8 +421,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
     // ── mutable state ──────────────────────────────────────────────────────
     String paymentType = 'Cash';
-    final amountCtrl =
-        TextEditingController(text: payable.toStringAsFixed(2));
+    final amountCtrl = TextEditingController(text: payable.toStringAsFixed(2));
 
     // ── helpers ────────────────────────────────────────────────────────────
     /// Numeric value currently in the amount field.
@@ -426,10 +435,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSt) {
-          final total  = payable;
-          final paid   = paidNow();
-          final bal    = _round2(total > paid ? total - paid : 0.0);
-          final change = _round2(paid  > total ? paid  - total : 0.0);
+          final total = payable;
+          final paid = paidNow();
+          final bal = _round2(total > paid ? total - paid : 0.0);
+          final change = _round2(paid > total ? paid - total : 0.0);
 
           // ── Cash button ─────────────────────────────────────────────────
           Widget cashChip() => Expanded(
@@ -442,9 +451,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     duration: const Duration(milliseconds: 180),
                     height: 46,
                     decoration: BoxDecoration(
-                      color: paymentType == 'Cash'
-                          ? _kPurple
-                          : Colors.transparent,
+                      color:
+                          paymentType == 'Cash' ? _kPurple : Colors.transparent,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: paymentType == 'Cash'
@@ -465,9 +473,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         Text(
                           'Cash',
                           style: TextStyle(
-                            color: paymentType == 'Cash'
-                                ? Colors.white
-                                : _kInk,
+                            color: paymentType == 'Cash' ? Colors.white : _kInk,
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
@@ -512,9 +518,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         Text(
                           'Credit',
                           style: TextStyle(
-                            color: paymentType == 'Credit'
-                                ? Colors.white
-                                : _kInk,
+                            color:
+                                paymentType == 'Credit' ? Colors.white : _kInk,
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
@@ -543,8 +548,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     'LKR ${_fmt.format(value)}',
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight:
-                          bold ? FontWeight.bold : FontWeight.bold,
+                      fontWeight: bold ? FontWeight.bold : FontWeight.bold,
                       color: vc ?? _kInk,
                     ),
                   ),
@@ -554,154 +558,156 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           }
 
           return Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             backgroundColor: Colors.white,
             insetPadding:
                 const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // ── Title row ──────────────────────────────────────────
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: _kPurple.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(10),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // ── Title row ──────────────────────────────────────────
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: _kPurple.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.credit_card_rounded,
+                              color: _kPurple, size: 22),
                         ),
-                        child: const Icon(Icons.credit_card_rounded,
-                            color: _kPurple, size: 22),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Payment\nSettlement',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: _kInk,
-                            height: 1.2,
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Payment\nSettlement',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: _kInk,
+                              height: 1.2,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // ── "Select Payment Type" label ────────────────────────
-                  const Text(
-                    'Select Payment Type',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF79747E),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
-                  // ── Toggle buttons ─────────────────────────────────────
-                  Row(
-                    children: [
-                      cashChip(),
-                      const SizedBox(width: 10),
-                      creditChip(),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-
-                  // ── Amount Paid field ──────────────────────────────────
-                  TextField(
-                    controller: amountCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true),
-                    style: const TextStyle(
-                        fontSize: 20,
+                    // ── "Select Payment Type" label ────────────────────────
+                    const Text(
+                      'Select Payment Type',
+                      style: TextStyle(
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: _kInk),
-                    onTap: () => amountCtrl.selection = TextSelection(
-                      baseOffset: 0,
-                      extentOffset: amountCtrl.text.length,
-                    ),
-                    onChanged: (_) => setSt(() {}),
-                    decoration: InputDecoration(
-                      labelText: 'Amount Paid (LKR)',
-                      labelStyle: const TextStyle(
-                          fontSize: 13, color: Color(0xFF79747E)),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      filled: false,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                            color: Color(0xFFCAC4D0), width: 1.2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: _kPurple, width: 2),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        color: Color(0xFF79747E),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
+                    const SizedBox(height: 10),
 
-                  // ── Summary rows ───────────────────────────────────────
-                  summRow('Total Amount', total),
-                  summRow('Paid Amount', paid),
-                  summRow('Balance', bal,
-                      vc: bal > 0 ? Colors.orange.shade800 : _kInk),
-                  summRow('Change', change,
-                      vc: change > 0 ? const Color(0xFF2E7D32) : _kInk),
+                    // ── Toggle buttons ─────────────────────────────────────
+                    Row(
+                      children: [
+                        cashChip(),
+                        const SizedBox(width: 10),
+                        creditChip(),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
 
-                  const SizedBox(height: 20),
-
-                  // ── Cancel text button ─────────────────────────────────
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      style: TextButton.styleFrom(
-                        foregroundColor: _kPurple,
-                        textStyle: const TextStyle(
-                          fontSize: 16,
+                    // ── Amount Paid field ──────────────────────────────────
+                    TextField(
+                      controller: amountCtrl,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      style: const TextStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
+                          color: _kInk),
+                      onTap: () => amountCtrl.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: amountCtrl.text.length,
+                      ),
+                      onChanged: (_) => setSt(() {}),
+                      decoration: InputDecoration(
+                        labelText: 'Amount Paid (LKR)',
+                        labelStyle: const TextStyle(
+                            fontSize: 13, color: Color(0xFF79747E)),
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        filled: false,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                              color: Color(0xFFCAC4D0), width: 1.2),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              const BorderSide(color: _kPurple, width: 2),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text('Cancel'),
                     ),
-                  ),
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 18),
 
-                  // ── Save Invoice pill button ────────────────────────────
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _kPurple,
-                        foregroundColor: Colors.white,
-                        elevation: 2,
-                        shadowColor: Colors.black26,
-                        shape: const StadiumBorder(),
-                        textStyle: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
+                    // ── Summary rows ───────────────────────────────────────
+                    summRow('Total Amount', total),
+                    summRow('Paid Amount', paid),
+                    summRow('Balance', bal,
+                        vc: bal > 0 ? Colors.orange.shade800 : _kInk),
+                    summRow('Change', change,
+                        vc: change > 0 ? const Color(0xFF2E7D32) : _kInk),
+
+                    const SizedBox(height: 20),
+
+                    // ── Cancel text button ─────────────────────────────────
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        style: TextButton.styleFrom(
+                          foregroundColor: _kPurple,
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
+                        child: const Text('Cancel'),
                       ),
-                      child: const Text('Save Invoice'),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+
+                    // ── Save Invoice pill button ────────────────────────────
+                    SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _kPurple,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shadowColor: Colors.black26,
+                          shape: const StadiumBorder(),
+                          textStyle: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: const Text('Save Invoice'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -710,8 +716,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     );
 
     if (result == true) {
-      final paid        = paidNow();
-      final creditLeft  = _round2(payable > paid ? payable - paid : 0.0);
+      final paid = paidNow();
+      final creditLeft = _round2(payable > paid ? payable - paid : 0.0);
       final effectiveType = creditLeft <= 0
           ? (paymentType == 'Credit' ? 'Credit' : 'Cash')
           : (paid <= 0 ? 'Credit' : 'Split');
@@ -719,24 +725,22 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     }
   }
 
-
-  Future<void> _saveInvoice(
-      String shop, String date, String paymentType,
+  Future<void> _saveInvoice(String shop, String date, String paymentType,
       [double? cashPaid, double? creditAmount]) async {
-    final prefs   = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final histStr = prefs.getString('invoice_history');
     List invoices = histStr != null ? jsonDecode(histStr) : [];
 
-    final prevBal   = _round2(_previousCredit < 0 ? 0.0 : _previousCredit);
+    final prevBal = _round2(_previousCredit < 0 ? 0.0 : _previousCredit);
     final invAmount = _round2(subtotal);
     // payable = items + old balance carried forward
-    final payable   = _round2(grandTotal);
+    final payable = _round2(grandTotal);
 
     // Normalise amounts from the new popup
-    final double cashReceived  = _round2(cashPaid    ?? 0.0);
-    final double creditOnInv   = _round2(creditAmount ?? 0.0);
+    final double cashReceived = _round2(cashPaid ?? 0.0);
+    final double creditOnInv = _round2(creditAmount ?? 0.0);
     // amountPaid = cash received (for backwards compat with other screens)
-    final double amountPaid    = cashReceived;
+    final double amountPaid = cashReceived;
 
     // New shop balance after this invoice:
     //   prevBal + invoiceItems - cash that can clear old balance - cashPaid towards items
@@ -766,24 +770,24 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         : (cashReceived <= 0 ? 'Credit' : paymentType);
 
     final newInv = {
-      'id':              DateTime.now().millisecondsSinceEpoch.toString(),
-      'shopName':        shop,
-      'date':            date,
-      'items':           invoiceItems.map((i) => i.toJson()).toList(),
-      'subtotal':        subtotal,
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'shopName': shop,
+      'date': date,
+      'items': invoiceItems.map((i) => i.toJson()).toList(),
+      'subtotal': subtotal,
       'previousBalance': _previousCredit,
       // 'total' = this invoice only (no B/F) to avoid double-counting in credit sum.
-      'total':           creditOnInv > 0 ? creditOnInv : 0.0,
-      'grandTotal':      grandTotal,
-      'paymentType':     effectiveType,
-      'cashPaid':        cashReceived,
-      'creditAmount':    creditOnInv,
-      'amountPaid':      amountPaid,
-      'creditApplied':   creditApplied,
-      'newShopBalance':  newShopBal,
-      'balance':         newShopBal,
-      'change':          (cashReceived - payable) > 0 ? cashReceived - payable : 0.0,
-      'isPaid':          creditOnInv <= 0,
+      'total': creditOnInv > 0 ? creditOnInv : 0.0,
+      'grandTotal': grandTotal,
+      'paymentType': effectiveType,
+      'cashPaid': cashReceived,
+      'creditAmount': creditOnInv,
+      'amountPaid': amountPaid,
+      'creditApplied': creditApplied,
+      'newShopBalance': newShopBal,
+      'balance': newShopBal,
+      'change': (cashReceived - payable) > 0 ? cashReceived - payable : 0.0,
+      'isPaid': creditOnInv <= 0,
     };
 
     invoices.add(newInv);
@@ -795,15 +799,15 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       final List cols = colStr != null ? jsonDecode(colStr) : [];
       final bool wasCredit = effectiveType == 'Credit';
       cols.add({
-        'shopName':      shop,
-        'amount':        creditApplied,
+        'shopName': shop,
+        'amount': creditApplied,
         'creditApplied': creditApplied,
-        'date':          date,
-        'oldBalance':    _round2(prevBal + (wasCredit ? invAmount : 0.0)),
-        'newBalance':    newShopBal,
-        'unapplied':     0.0,
-        'source':        'invoice',
-        'invoiceId':     newInv['id'],
+        'date': date,
+        'oldBalance': _round2(prevBal + (wasCredit ? invAmount : 0.0)),
+        'newBalance': newShopBal,
+        'unapplied': 0.0,
+        'source': 'invoice',
+        'invoiceId': newInv['id'],
       });
       await prefs.setString('collection_history', jsonEncode(cols));
     }
@@ -852,25 +856,25 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
   /// Lavender pill button (Add Item / Print Invoice)
   Widget _pillBtn({
-    required IconData    icon,
-    required String      label,
+    required IconData icon,
+    required String label,
     required VoidCallback onPressed,
-    double height    = 48,
-    double fontSize  = 15,
+    double height = 48,
+    double fontSize = 15,
     double? fullWidth,
   }) {
     final child = SizedBox(
       height: height,
-      width:  fullWidth,
+      width: fullWidth,
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon:  Icon(icon, size: fontSize + 5, color: _kPurple),
+        icon: Icon(icon, size: fontSize + 5, color: _kPurple),
         label: Text(
           label,
           style: TextStyle(
-            fontSize:   fontSize,
+            fontSize: fontSize,
             fontWeight: FontWeight.w600,
-            color:      _kPurple,
+            color: _kPurple,
           ),
         ),
         style: ElevatedButton.styleFrom(
@@ -896,9 +900,9 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         '$label  ${_fmtLkr(value)}',
         textAlign: TextAlign.right,
         style: TextStyle(
-          fontSize:   bold ? 17 : 15,
+          fontSize: bold ? 17 : 15,
           fontWeight: bold ? FontWeight.bold : FontWeight.w400,
-          color:      _kInk,
+          color: _kInk,
         ),
       ),
     );
@@ -911,28 +915,29 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       focusNode: _shopFocus,
       optionsBuilder: (v) {
         if (v.text.isEmpty) return const Iterable<String>.empty();
-        return allShops.where(
-            (o) => o.toLowerCase().contains(v.text.toLowerCase()));
+        return allShops
+            .where((o) => o.toLowerCase().contains(v.text.toLowerCase()));
       },
       onSelected: _onShopSelected,
       fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
         return TextField(
-          controller:         controller,
-          focusNode:          focusNode,
-          onEditingComplete:  onEditingComplete,
+          controller: controller,
+          focusNode: focusNode,
+          onEditingComplete: onEditingComplete,
           onChanged: (val) {
             if (val.trim().isNotEmpty) _onShopSelected(val.trim());
           },
           style: const TextStyle(fontSize: 16, color: _kInk),
           decoration: InputDecoration(
-            hintText:  'Shop / Customer Name',
+            hintText: 'Shop / Customer Name',
             hintStyle: const TextStyle(fontSize: 16, color: _kGrey),
-            filled:    true,
+            filled: true,
             fillColor: _kWhite,
-            border:         _fieldBorder(),
-            enabledBorder:  _fieldBorder(),
-            focusedBorder:  _fieldBorder(_kPurple, 2),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+            border: _fieldBorder(),
+            enabledBorder: _fieldBorder(),
+            focusedBorder: _fieldBorder(_kPurple, 2),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
           ),
         );
       },
@@ -941,22 +946,22 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           alignment: Alignment.topLeft,
           child: Material(
             elevation: 4,
-            color:        Colors.white,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(8),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: 220,
-                maxWidth:  MediaQuery.of(context).size.width - 32,
+                maxWidth: MediaQuery.of(context).size.width - 32,
               ),
               child: ListView.builder(
-                padding:     EdgeInsets.zero,
-                shrinkWrap:  true,
-                itemCount:   options.length,
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
                 itemBuilder: (context, i) {
                   final o = options.elementAt(i);
                   return ListTile(
-                    title:  Text(o),
-                    onTap:  () => onSelected(o),
+                    title: Text(o),
+                    onTap: () => onSelected(o),
                   );
                 },
               ),
@@ -970,17 +975,17 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   /// Invoice item tile with qty controls
   Widget _buildItemTile(int idx, Product item) {
     return Container(
-      margin:  const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
       decoration: BoxDecoration(
-        color:        Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border:       Border.all(color: const Color(0xFFE7E0EC)),
+        border: Border.all(color: const Color(0xFFE7E0EC)),
         boxShadow: [
           BoxShadow(
-            color:      Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 4,
-            offset:     const Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -998,9 +1003,9 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize:   15,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color:      _kInk,
+                      color: _kInk,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -1023,9 +1028,9 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
               '${item.qty}',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize:   15,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
-                color:      _kInk,
+                color: _kInk,
               ),
             ),
           ),
@@ -1033,10 +1038,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
           // Delete
           IconButton(
-            tooltip:    'Remove',
-            icon:       const Icon(Icons.delete_outline, size: 22),
-            color:      Colors.red.shade400,
-            onPressed:  () => _updateItemQty(idx, -item.qty),
+            tooltip: 'Remove',
+            icon: const Icon(Icons.delete_outline, size: 22),
+            color: Colors.red.shade400,
+            onPressed: () => _updateItemQty(idx, -item.qty),
           ),
         ],
       ),
@@ -1045,10 +1050,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
   Widget _circleBtn(IconData icon, VoidCallback onTap) {
     return InkWell(
-      onTap:        onTap,
+      onTap: onTap,
       customBorder: const CircleBorder(),
       child: Container(
-        width:  32,
+        width: 32,
         height: 32,
         decoration: const BoxDecoration(
           color: _kLavender,
@@ -1080,16 +1085,17 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     child: Text(
                       'Create Invoice',
                       style: TextStyle(
-                        fontSize:   24,
+                        fontSize: 24,
                         fontWeight: FontWeight.w600,
-                        color:      _kInk,
+                        color: _kInk,
                       ),
                     ),
                   ),
                   // Settings icon
                   IconButton(
-                    tooltip:   'Printer Settings',
-                    icon:      const Icon(Icons.settings, size: 26, color: Color(0xFF2B2B2B)),
+                    tooltip: 'Printer Settings',
+                    icon: const Icon(Icons.settings,
+                        size: 26, color: Color(0xFF2B2B2B)),
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -1098,8 +1104,9 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                   ),
                   // Archive / Invoice history icon
                   IconButton(
-                    tooltip:   'Invoice History',
-                    icon:      const Icon(Icons.archive, size: 26, color: Color(0xFF2B2B2B)),
+                    tooltip: 'Invoice History',
+                    icon: const Icon(Icons.archive,
+                        size: 26, color: Color(0xFF2B2B2B)),
                     onPressed: () async {
                       await Navigator.push(
                         context,
@@ -1128,25 +1135,26 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                   Text(
                     'Balance B/F: ${_fmtLkr(_previousCredit)}',
                     style: const TextStyle(
-                      fontSize:   16,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color:      _kGreen,
+                      color: _kGreen,
                     ),
                   ),
                   const SizedBox(height: 14),
 
                   // ── Product dropdown ──────────────────────────────────
                   DropdownButtonFormField<Product>(
-                    value:          selectedProduct,
-                    isExpanded:     true,
-                    icon:           const Icon(Icons.arrow_drop_down, size: 28, color: _kGrey),
-                    dropdownColor:  Colors.white,
+                    value: selectedProduct,
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down,
+                        size: 28, color: _kGrey),
+                    dropdownColor: Colors.white,
                     decoration: InputDecoration(
-                      filled:         true,
-                      fillColor:      _kWhite,
-                      border:         _fieldBorder(),
-                      enabledBorder:  _fieldBorder(),
-                      focusedBorder:  _fieldBorder(_kPurple, 2),
+                      filled: true,
+                      fillColor: _kWhite,
+                      border: _fieldBorder(),
+                      enabledBorder: _fieldBorder(),
+                      focusedBorder: _fieldBorder(_kPurple, 2),
                       contentPadding: const EdgeInsets.fromLTRB(18, 22, 10, 22),
                     ),
                     hint: const Text(
@@ -1175,38 +1183,45 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                       children: [
                         Expanded(
                           child: TextField(
-                            controller:   _qtyCtrl,
+                            controller: _qtyCtrl,
                             keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
                             textInputAction: TextInputAction.done,
                             onSubmitted: (_) => _addToInvoice(),
                             style: const TextStyle(fontSize: 18, color: _kInk),
-                            onChanged:    (_) => setState(() {}),
+                            onChanged: (_) => setState(() {}),
                             onTap: () => _qtyCtrl.selection = TextSelection(
-                              baseOffset:   0,
+                              baseOffset: 0,
                               extentOffset: _qtyCtrl.text.length,
                             ),
                             decoration: const InputDecoration(
-                              isDense:   true,
-                              hintText:  'Quantity',
-                              hintStyle: TextStyle(fontSize: 18, color: Color(0xFF49454F)),
-                              contentPadding: EdgeInsets.only(top: 14, bottom: 16),
+                              isDense: true,
+                              hintText: 'Quantity',
+                              hintStyle: TextStyle(
+                                  fontSize: 18, color: Color(0xFF49454F)),
+                              contentPadding:
+                                  EdgeInsets.only(top: 14, bottom: 16),
                               border: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color(0xFF79747E), width: 1.2)),
+                                  borderSide: BorderSide(
+                                      color: Color(0xFF79747E), width: 1.2)),
                               enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color(0xFF79747E), width: 1.2)),
+                                  borderSide: BorderSide(
+                                      color: Color(0xFF79747E), width: 1.2)),
                               focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: _kPurple, width: 2)),
+                                  borderSide:
+                                      BorderSide(color: _kPurple, width: 2)),
                             ),
                           ),
                         ),
                         SizedBox(width: narrow ? 12 : 16),
                         _pillBtn(
-                          icon:      Icons.add,
-                          label:     'Add Item',
+                          icon: Icons.add,
+                          label: 'Add Item',
                           onPressed: _addToInvoice,
-                          height:    narrow ? 46 : 52,
-                          fontSize:  narrow ? 14.5 : 16,
+                          height: narrow ? 46 : 52,
+                          fontSize: narrow ? 14.5 : 16,
                         ),
                       ],
                     );
@@ -1214,7 +1229,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                   const SizedBox(height: 20),
 
                   // ── Divider below input section ───────────────────────
-                  const Divider(color: Color(0xFFCAC4D0), height: 1, thickness: 1),
+                  const Divider(
+                      color: Color(0xFFCAC4D0), height: 1, thickness: 1),
                   const SizedBox(height: 12),
                 ],
               ),
@@ -1265,21 +1281,21 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     height: 56,
                     child: ElevatedButton.icon(
                       onPressed: _printInvoice,
-                      icon:  const Icon(Icons.print, size: 22, color: _kPurple),
+                      icon: const Icon(Icons.print, size: 22, color: _kPurple),
                       label: const Text(
                         'Print Invoice',
                         style: TextStyle(
-                          fontSize:   17,
+                          fontSize: 17,
                           fontWeight: FontWeight.w600,
-                          color:      _kPurple,
+                          color: _kPurple,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _kLavender,
                         foregroundColor: _kPurple,
-                        elevation:   2,
+                        elevation: 2,
                         shadowColor: Colors.black26,
-                        shape:       const StadiumBorder(),
+                        shape: const StadiumBorder(),
                       ),
                     ),
                   ),

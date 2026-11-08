@@ -55,34 +55,34 @@ class _CreditSummaryScreenState extends State<CreditSummaryScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _creditSummary.isEmpty
-          ? const Center(
-              child: Text(
-                'No credit transactions found.\nPlease create and save invoices with credit.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _creditSummary.length,
-              itemBuilder: (ctx, i) {
-                final credit = _creditSummary[i];
-                return Card(
-                  margin: const EdgeInsets.all(10),
-                  child: ListTile(
-                    title: Text(credit['shopName']),
-                    subtitle: Text(
-                      'Total Credit: LKR ${credit['credit'].toStringAsFixed(2)}\nCollection: LKR ${credit['collection'].toStringAsFixed(2)}\nRemaining: LKR ${(credit['credit'] - credit['collection']).toStringAsFixed(2)}',
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.arrow_forward),
-                      onPressed: () {
-                        // You can show more details if needed
-                      },
-                    ),
+              ? const Center(
+                  child: Text(
+                    'No credit transactions found.\nPlease create and save invoices with credit.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
-                );
-              },
-            ),
+                )
+              : ListView.builder(
+                  itemCount: _creditSummary.length,
+                  itemBuilder: (ctx, i) {
+                    final credit = _creditSummary[i];
+                    return Card(
+                      margin: const EdgeInsets.all(10),
+                      child: ListTile(
+                        title: Text(credit['shopName']),
+                        subtitle: Text(
+                          'Total Credit: LKR ${credit['credit'].toStringAsFixed(2)}\nCollection: LKR ${credit['collection'].toStringAsFixed(2)}\nRemaining: LKR ${(credit['credit'] - credit['collection']).toStringAsFixed(2)}',
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.arrow_forward),
+                          onPressed: () {
+                            // You can show more details if needed
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

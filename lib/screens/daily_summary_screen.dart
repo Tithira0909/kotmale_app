@@ -105,7 +105,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       todayInvsList.add(invMap);
 
       final paymentType = invMap['paymentType'] ?? '';
-      final totalInvVal = double.tryParse(invMap['total']?.toString() ?? '0') ?? 0.0;
+      final totalInvVal =
+          double.tryParse(invMap['total']?.toString() ?? '0') ?? 0.0;
 
       if (paymentType == 'Credit') {
         creditSalesSum += totalInvVal;
@@ -114,7 +115,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       final todayPart =
           double.tryParse(invMap['collection_today']?.toString() ?? '0') ?? 0.0;
       final prevPart =
-          double.tryParse(invMap['collection_previous']?.toString() ?? '0') ?? 0.0;
+          double.tryParse(invMap['collection_previous']?.toString() ?? '0') ??
+              0.0;
       final collection =
           double.tryParse(invMap['collection']?.toString() ?? '0') ?? 0.0;
 
@@ -183,12 +185,15 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
     }
 
     // Sort summary list by sold value descending
-    newList.sort((a, b) => (b['soldValue'] as double).compareTo(a['soldValue'] as double));
+    newList.sort((a, b) =>
+        (b['soldValue'] as double).compareTo(a['soldValue'] as double));
 
     // Sort today's invoices descending
     todayInvsList.sort((a, b) {
-      final da = DateTime.tryParse(a['date']?.toString() ?? '') ?? DateTime(2000);
-      final db = DateTime.tryParse(b['date']?.toString() ?? '') ?? DateTime(2000);
+      final da =
+          DateTime.tryParse(a['date']?.toString() ?? '') ?? DateTime(2000);
+      final db =
+          DateTime.tryParse(b['date']?.toString() ?? '') ?? DateTime(2000);
       return db.compareTo(da);
     });
 
@@ -207,7 +212,9 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       totalCashValue = todayCashSale + totalCreditCollection;
 
       // Outstanding balance for today's sales = Total Sold - Daily Cash Received
-      totalOutstandingBalance = (totalSoldValue - todayCashSale) < 0 ? 0.0 : (totalSoldValue - todayCashSale);
+      totalOutstandingBalance = (totalSoldValue - todayCashSale) < 0
+          ? 0.0
+          : (totalSoldValue - todayCashSale);
 
       _loading = false;
     });
@@ -282,9 +289,11 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('⚠️ Please connect a printer first in Printer Settings'),
+          content: const Text(
+              '⚠️ Please connect a printer first in Printer Settings'),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
       return;
@@ -300,7 +309,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             SnackBar(
               content: const Text('❌ Printer connection failed'),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
           );
           return;
@@ -368,7 +378,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         SnackBar(
           content: const Text('🖨️ Daily Summary printed successfully'),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           backgroundColor: const Color(0xFF1E40AF),
         ),
       );
@@ -378,7 +389,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         SnackBar(
           content: Text('Printer error: $e'),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
@@ -430,7 +442,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                 onRefresh: _loadDailySummary,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -471,7 +484,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF1E40AF),
-                            side: const BorderSide(color: Color(0xFF1E40AF), width: 1.5),
+                            side: const BorderSide(
+                                color: Color(0xFF1E40AF), width: 1.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -520,7 +534,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Icons.chevron_left_rounded, color: Color(0xFF1E40AF), size: 24),
+            icon: const Icon(Icons.chevron_left_rounded,
+                color: Color(0xFF1E40AF), size: 24),
             onPressed: () => _changeDateByDays(-1),
           ),
           InkWell(
@@ -530,7 +545,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_month_outlined, color: Color(0xFF1E40AF), size: 18),
+                  const Icon(Icons.calendar_month_outlined,
+                      color: Color(0xFF1E40AF), size: 18),
                   const SizedBox(width: 8),
                   Text(
                     dateFormatted,
@@ -545,7 +561,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.chevron_right_rounded, color: Color(0xFF1E40AF), size: 24),
+            icon: const Icon(Icons.chevron_right_rounded,
+                color: Color(0xFF1E40AF), size: 24),
             onPressed: () => _changeDateByDays(1),
           ),
         ],
@@ -730,7 +747,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         children: [
           Row(
             children: const [
-              Icon(Icons.account_balance_outlined, size: 18, color: Color(0xFF1E40AF)),
+              Icon(Icons.account_balance_outlined,
+                  size: 18, color: Color(0xFF1E40AF)),
               SizedBox(width: 8),
               Text(
                 'Payment Summary',
@@ -743,15 +761,19 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          _buildSummaryRow('Daily Cash Sales', _formatLkr(todayCashSale), false),
+          _buildSummaryRow(
+              'Daily Cash Sales', _formatLkr(todayCashSale), false),
           const SizedBox(height: 6),
-          _buildSummaryRow('Old Credit Recovered (Invoices)', _formatLkr(_creditCollectionFromInvoices), false),
+          _buildSummaryRow('Old Credit Recovered (Invoices)',
+              _formatLkr(_creditCollectionFromInvoices), false),
           const SizedBox(height: 6),
-          _buildSummaryRow('Shop Collections', _formatLkr(_creditCollectionFromShopCollections), false),
+          _buildSummaryRow('Shop Collections',
+              _formatLkr(_creditCollectionFromShopCollections), false),
           const SizedBox(height: 8),
           const Divider(color: Color(0xFFE2E8F0), height: 1),
           const SizedBox(height: 8),
-          _buildSummaryRow('Total Net Cash Received', _formatLkr(totalCashValue), true),
+          _buildSummaryRow(
+              'Total Net Cash Received', _formatLkr(totalCashValue), true),
         ],
       ),
     );
@@ -842,17 +864,32 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                           3: FixedColumnWidth(70),
                           4: FlexColumnWidth(1.2),
                         },
-                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                        defaultVerticalAlignment:
+                            TableCellVerticalAlignment.middle,
                         children: [
                           // Header
                           TableRow(
-                            decoration: const BoxDecoration(color: Color(0xFF1E40AF)),
+                            decoration:
+                                const BoxDecoration(color: Color(0xFF1E40AF)),
                             children: [
-                              _tableCell('Item Name', header: true, color: Colors.white),
-                              _tableCell('Inv Qty', header: true, color: Colors.white, center: true),
-                              _tableCell('Sold Qty', header: true, color: Colors.white, center: true),
-                              _tableCell('Bal Qty', header: true, color: Colors.white, center: true),
-                              _tableCell('Sold Total', header: true, color: Colors.white, right: true),
+                              _tableCell('Item Name',
+                                  header: true, color: Colors.white),
+                              _tableCell('Inv Qty',
+                                  header: true,
+                                  color: Colors.white,
+                                  center: true),
+                              _tableCell('Sold Qty',
+                                  header: true,
+                                  color: Colors.white,
+                                  center: true),
+                              _tableCell('Bal Qty',
+                                  header: true,
+                                  color: Colors.white,
+                                  center: true),
+                              _tableCell('Sold Total',
+                                  header: true,
+                                  color: Colors.white,
+                                  right: true),
                             ],
                           ),
                           // Rows
@@ -860,13 +897,16 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                             final item = summaryData[i];
                             final controller = invQtyControllers[item['name']]!;
                             final bal = item['balanceQty'] ?? 0;
-                            final bg = (i % 2 == 0) ? Colors.white : const Color(0xFFF8FAFC);
+                            final bg = (i % 2 == 0)
+                                ? Colors.white
+                                : const Color(0xFFF8FAFC);
 
                             return TableRow(
                               decoration: BoxDecoration(color: bg),
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
                                   child: Text(
                                     item['name'] ?? '',
                                     style: const TextStyle(
@@ -878,7 +918,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                 ),
                                 // Editable Inv Qty
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 4),
                                   child: Focus(
                                     onFocusChange: (hasFocus) {
                                       if (hasFocus) {
@@ -898,17 +939,20 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                       ),
                                       decoration: InputDecoration(
                                         isDense: true,
-                                        contentPadding: const EdgeInsets.symmetric(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
                                           horizontal: 4,
                                           vertical: 6,
                                         ),
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                       ),
                                       onChanged: (val) {
                                         setState(() {
-                                          item['invQty'] = int.tryParse(val) ?? 0;
+                                          item['invQty'] =
+                                              int.tryParse(val) ?? 0;
                                           item['balanceQty'] =
                                               item['invQty'] - item['soldQty'];
                                         });
@@ -919,20 +963,26 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                 ),
                                 // Sold Qty
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
                                   child: Text(
                                     '${item['soldQty']}',
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12.5),
                                   ),
                                 ),
                                 // Bal Qty
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: _balanceColor(bal).withOpacity(0.1),
+                                      color:
+                                          _balanceColor(bal).withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -948,9 +998,11 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                 ),
                                 // Sold Total
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
                                   child: Text(
-                                    _formatLkr((item['soldValue'] as double?) ?? 0.0),
+                                    _formatLkr(
+                                        (item['soldValue'] as double?) ?? 0.0),
                                     textAlign: TextAlign.right,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -1165,7 +1217,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             : Column(
                 children: _todayInvoices.take(5).map((inv) {
                   final shopName = inv['shopName']?.toString() ?? 'General';
-                  final totalVal = double.tryParse(inv['total']?.toString() ?? '0') ?? 0.0;
+                  final totalVal =
+                      double.tryParse(inv['total']?.toString() ?? '0') ?? 0.0;
                   final payType = inv['paymentType']?.toString() ?? 'Cash';
                   final dtStr = inv['date']?.toString() ?? '';
                   final dt = DateTime.tryParse(dtStr);
@@ -1192,13 +1245,17 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                         Container(
                           padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: isCredit ? Colors.amber.shade50 : const Color(0xFFECFDF5),
+                            color: isCredit
+                                ? Colors.amber.shade50
+                                : const Color(0xFFECFDF5),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             Icons.receipt_outlined,
                             size: 16,
-                            color: isCredit ? Colors.amber.shade900 : const Color(0xFF047857),
+                            color: isCredit
+                                ? Colors.amber.shade900
+                                : const Color(0xFF047857),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -1242,9 +1299,12 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                             ),
                             const SizedBox(height: 2),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: isCredit ? Colors.amber.shade100 : const Color(0xFFD1FAE5),
+                                color: isCredit
+                                    ? Colors.amber.shade100
+                                    : const Color(0xFFD1FAE5),
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
@@ -1252,7 +1312,9 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                 style: TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold,
-                                  color: isCredit ? Colors.amber.shade900 : const Color(0xFF065F46),
+                                  color: isCredit
+                                      ? Colors.amber.shade900
+                                      : const Color(0xFF065F46),
                                 ),
                               ),
                             ),

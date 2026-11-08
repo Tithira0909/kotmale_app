@@ -95,9 +95,8 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
 
       // credit (only if missing)
       if (!inv.containsKey('credit') || inv['credit'] == null) {
-        inv['credit'] = payType == 'Credit'
-            ? _round2(_toDouble(inv['total']))
-            : 0.0;
+        inv['credit'] =
+            payType == 'Credit' ? _round2(_toDouble(inv['total'])) : 0.0;
         changed = true;
       }
 
@@ -129,10 +128,8 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
         await _migrateInvoicesIfNeeded(prefs, raw);
       }
 
-      final List<Map<String, dynamic>> local = raw
-          .whereType<Map>()
-          .map((e) => e.cast<String, dynamic>())
-          .toList();
+      final List<Map<String, dynamic>> local =
+          raw.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList();
 
       // latest first
       local.sort(
@@ -171,9 +168,8 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
         final matchesShop = shop.contains(search);
 
         final payType = _safePayType(inv['paymentType']);
-        final matchesPayment = _filterPayment == 'All'
-            ? true
-            : payType == _filterPayment;
+        final matchesPayment =
+            _filterPayment == 'All' ? true : payType == _filterPayment;
 
         return matchesShop && matchesPayment;
       }).toList();
@@ -292,126 +288,128 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : filteredInvoices.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No invoices found',
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filteredInvoices.length,
-                      itemBuilder: (ctx, i) {
-                        final inv = filteredInvoices[i];
+                      ? const Center(
+                          child: Text(
+                            'No invoices found',
+                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: filteredInvoices.length,
+                          itemBuilder: (ctx, i) {
+                            final inv = filteredInvoices[i];
 
-                        final payType = _safePayType(inv['paymentType']);
-                        final isCredit = payType == 'Credit';
+                            final payType = _safePayType(inv['paymentType']);
+                            final isCredit = payType == 'Credit';
 
-                        final total = _toDouble(inv['total']);
-                        final remainingCreditRaw = isCredit
-                            ? _toDouble(inv['credit'])
-                            : 0.0;
+                            final total = _toDouble(inv['total']);
+                            final remainingCreditRaw =
+                                isCredit ? _toDouble(inv['credit']) : 0.0;
 
-                        // ✅ never show negative
-                        final safeRemaining = remainingCreditRaw < 0
-                            ? 0.0
-                            : remainingCreditRaw;
+                            // ✅ never show negative
+                            final safeRemaining = remainingCreditRaw < 0
+                                ? 0.0
+                                : remainingCreditRaw;
 
-                        final cleared = isCredit && safeRemaining <= 0;
+                            final cleared = isCredit && safeRemaining <= 0;
 
-                        final List itemsRaw = (inv['items'] is List)
-                            ? (inv['items'] as List)
-                            : const [];
+                            final List itemsRaw = (inv['items'] is List)
+                                ? (inv['items'] as List)
+                                : const [];
 
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          elevation: 2,
-                          child: ExpansionTile(
-                            tilePadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                            ),
-                            title: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    (inv['shopName'] ?? 'Unknown').toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              elevation: 2,
+                              child: ExpansionTile(
+                                tilePadding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
                                 ),
-                                Text(
-                                  'LKR ${total.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blueAccent,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                                title: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(_formatDate(inv['date'])),
+                                    Expanded(
+                                      child: Text(
+                                        (inv['shopName'] ?? 'Unknown')
+                                            .toString(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
                                     Text(
-                                      payType,
-                                      style: TextStyle(
-                                        color: isCredit
-                                            ? Colors.red
-                                            : Colors.green,
-                                        fontWeight: FontWeight.w600,
+                                      'LKR ${total.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blueAccent,
                                       ),
                                     ),
                                   ],
                                 ),
-                                if (isCredit)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Text(
-                                      cleared
-                                          ? '✅ Credit Cleared'
-                                          : 'Remaining Credit: LKR ${safeRemaining.toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                        color: cleared
-                                            ? Colors.green
-                                            : Colors.orange,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(_formatDate(inv['date'])),
+                                        Text(
+                                          payType,
+                                          style: TextStyle(
+                                            color: isCredit
+                                                ? Colors.red
+                                                : Colors.green,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                              ],
-                            ),
-                            children: [
-                              ...itemsRaw.map((itemAny) {
-                                final item = (itemAny is Map)
-                                    ? itemAny.cast<String, dynamic>()
-                                    : <String, dynamic>{};
+                                    if (isCredit)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          cleared
+                                              ? '✅ Credit Cleared'
+                                              : 'Remaining Credit: LKR ${safeRemaining.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            color: cleared
+                                                ? Colors.green
+                                                : Colors.orange,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                children: [
+                                  ...itemsRaw.map((itemAny) {
+                                    final item = (itemAny is Map)
+                                        ? itemAny.cast<String, dynamic>()
+                                        : <String, dynamic>{};
 
-                                final name = (item['name'] ?? '').toString();
-                                final qty = _toInt(item['qty']);
-                                final price = _toDouble(item['price']);
-                                final lineTotal = qty * price;
+                                    final name =
+                                        (item['name'] ?? '').toString();
+                                    final qty = _toInt(item['qty']);
+                                    final price = _toDouble(item['price']);
+                                    final lineTotal = qty * price;
 
-                                return ListTile(
-                                  dense: true,
-                                  title: Text(name),
-                                  subtitle: Text(
-                                    'Qty: $qty × LKR ${price.toStringAsFixed(2)}',
-                                  ),
-                                  trailing: Text(
-                                    'LKR ${lineTotal.toStringAsFixed(2)}',
-                                  ),
-                                );
-                              }).toList(),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                                    return ListTile(
+                                      dense: true,
+                                      title: Text(name),
+                                      subtitle: Text(
+                                        'Qty: $qty × LKR ${price.toStringAsFixed(2)}',
+                                      ),
+                                      trailing: Text(
+                                        'LKR ${lineTotal.toStringAsFixed(2)}',
+                                      ),
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),
