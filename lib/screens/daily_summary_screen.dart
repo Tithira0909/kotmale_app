@@ -510,7 +510,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
+            // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.015),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -657,7 +658,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
+            // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.015),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -719,7 +721,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
+            // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.015),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -822,7 +825,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.015),
+                      // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.015),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -932,7 +936,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: _balanceColor(bal).withValues(alpha: 0.1),
+                                      // ignore: deprecated_member_use
+color: _balanceColor(bal).withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -1046,7 +1051,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                       border: Border.all(color: const Color(0xFFE2E8F0)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.015),
+                          // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.015),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -1181,7 +1187,8 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                       border: Border.all(color: const Color(0xFFE2E8F0)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.015),
+                          // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.015),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),

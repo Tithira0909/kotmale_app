@@ -620,7 +620,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: _kPurple.withValues(alpha: 0.12),
+                          // ignore: deprecated_member_use
+color: _kPurple.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.credit_card_rounded,
@@ -1027,7 +1028,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         border:       Border.all(color: const Color(0xFFE7E0EC)),
         boxShadow: [
           BoxShadow(
-            color:      Colors.black.withValues(alpha: 0.04),
+            // ignore: deprecated_member_use
+color:      Colors.black.withOpacity(0.04),
             blurRadius: 4,
             offset:     const Offset(0, 2),
           ),

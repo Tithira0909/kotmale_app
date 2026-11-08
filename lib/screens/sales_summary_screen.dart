@@ -459,7 +459,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.withValues(alpha: 0.3),
+            // ignore: deprecated_member_use
+color: Colors.indigo.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -565,7 +566,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
+                    // ignore: deprecated_member_use
+color: Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Column(
@@ -614,7 +616,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
+                    // ignore: deprecated_member_use
+color: Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Column(
@@ -677,7 +680,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.03),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -718,7 +722,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.03),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -743,7 +748,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
 
     final headerBg = Colors.indigo.shade800;
     final zebraA = Colors.white;
-    final zebraB = Colors.indigo.shade50.withValues(alpha: 0.3);
+    // ignore: deprecated_member_use
+final zebraB = Colors.indigo.shade50.withOpacity(0.3);
     final totalBg = Colors.indigo.shade100;
 
     return Container(
@@ -752,7 +758,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -911,7 +918,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.03),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

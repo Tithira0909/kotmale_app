@@ -679,7 +679,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.withValues(alpha: 0.3),
+            // ignore: deprecated_member_use
+color: Colors.indigo.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -698,7 +699,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
+                        // ignore: deprecated_member_use
+color: Colors.white.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
@@ -839,7 +841,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
+                        // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.04),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -888,7 +891,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
+                      // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -999,7 +1003,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: color.withValues(alpha: 0.15),
+      // ignore: deprecated_member_use
+selectedColor: color.withOpacity(0.15),
       backgroundColor: Colors.white,
       labelStyle: TextStyle(
         color: isSelected ? color : Colors.grey.shade700,
@@ -1036,7 +1041,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            // ignore: deprecated_member_use
+color: Colors.black.withOpacity(0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
