@@ -107,7 +107,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       final paymentType = invMap['paymentType'] ?? '';
       final totalInvVal = double.tryParse(invMap['total']?.toString() ?? '0') ?? 0.0;
 
-      if (paymentType == 'Credit' || paymentType == 'Cheque') {
+      if (paymentType == 'Credit') {
         creditSalesSum += totalInvVal;
       }
 

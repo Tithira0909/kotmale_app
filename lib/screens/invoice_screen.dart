@@ -115,7 +115,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         final invShop = _normKey(inv['shopName']?.toString() ?? '');
         if (invShop != shopKey) continue;
         final payType = (inv['paymentType']?.toString().trim() ?? '');
-        if (['Credit', 'Cheque'].contains(payType)) {
+        if (payType == 'Credit') {
           final t = _toDouble(inv['total']);
           if (t > 0) creditInvoiceTotal += t;
         }
@@ -457,67 +457,24 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     alignment: Alignment.center,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         if (paymentType == 'Cash') ...[
                           const Icon(Icons.check,
                               color: Colors.white, size: 16),
                           const SizedBox(width: 4),
                         ],
-                        Text(
-                          'Cash',
-                          style: TextStyle(
-                            color: paymentType == 'Cash'
-                                ? Colors.white
-                                : _kInk,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-
-          // ── Cheque button ───────────────────────────────────────────────
-          Widget chequeChip() => Expanded(
-                child: GestureDetector(
-                  onTap: () => setSt(() {
-                    paymentType = 'Cheque';
-                    amountCtrl.text = payable.toStringAsFixed(2);
-                  }),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: paymentType == 'Cheque'
-                          ? _kPurple
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: paymentType == 'Cheque'
-                            ? _kPurple
-                            : const Color(0xFFCAC4D0),
-                        width: 1.5,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (paymentType == 'Cheque') ...[
-                          const Icon(Icons.check,
-                              color: Colors.white, size: 16),
-                          const SizedBox(width: 4),
-                        ],
-                        Text(
-                          'Cheque',
-                          style: TextStyle(
-                            color: paymentType == 'Cheque'
-                                ? Colors.white
-                                : _kInk,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                        Flexible(
+                          child: Text(
+                            'Cash',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: paymentType == 'Cash'
+                                  ? Colors.white
+                                  : _kInk,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ],
@@ -551,20 +508,24 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                     alignment: Alignment.center,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         if (paymentType == 'Credit') ...[
                           const Icon(Icons.check,
                               color: Colors.white, size: 16),
                           const SizedBox(width: 4),
                         ],
-                        Text(
-                          'Credit',
-                          style: TextStyle(
-                            color: paymentType == 'Credit'
-                                ? Colors.white
-                                : _kInk,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                        Flexible(
+                          child: Text(
+                            'Credit',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: paymentType == 'Credit'
+                                  ? Colors.white
+                                  : _kInk,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ],
@@ -658,9 +619,7 @@ color: _kPurple.withOpacity(0.12),
                   Row(
                     children: [
                       cashChip(),
-                      const SizedBox(width: 8),
-                      chequeChip(),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       creditChip(),
                     ],
                   ),
@@ -823,7 +782,7 @@ color: _kPurple.withOpacity(0.12),
       'subtotal':        subtotal,
       'previousBalance': _previousCredit,
       // 'total' = this invoice only (no B/F) to avoid double-counting in credit sum.
-      'total':           ['Credit', 'Cheque'].contains(effectiveType) ? (creditOnInv > 0 ? creditOnInv : invAmount) : (creditOnInv > 0 ? creditOnInv : 0.0),
+      'total':           effectiveType == 'Credit' ? (creditOnInv > 0 ? creditOnInv : invAmount) : (creditOnInv > 0 ? creditOnInv : 0.0),
       'grandTotal':      grandTotal,
       'paymentType':     effectiveType,
       'cashPaid':        cashReceived,

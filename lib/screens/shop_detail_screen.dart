@@ -67,7 +67,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
   bool _isCredit(dynamic invAny) {
     if (invAny is! Map) return false;
-    return ['Credit', 'Cheque'].contains(invAny['paymentType']?.toString().trim() ?? '');
+    return (invAny['paymentType']?.toString().trim() ?? '') == 'Credit';
   }
 
   bool _isThisShop(dynamic invAny) {
@@ -276,7 +276,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     for (final invAny in invoices) {
       final inv = (invAny as Map).cast<String, dynamic>();
       final payType = (inv['paymentType']?.toString().trim() ?? '');
-      if (payType == 'Credit' || payType == 'Cheque') {
+      if (payType == 'Credit') {
         final t = _toDouble(inv['total']);
         creditInvoiceTotal += (t < 0 ? 0.0 : t);
       }
@@ -328,7 +328,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     for (final invAny in invoices) {
       final inv = (invAny as Map).cast<String, dynamic>();
       final isCredit =
-          ['Credit', 'Cheque'].contains(inv['paymentType']?.toString().trim() ?? '');
+          (inv['paymentType']?.toString().trim() ?? '') == 'Credit';
       final creditRemain = isCredit ? _toDouble(inv['credit']) : 0.0;
       runningOutstanding += (creditRemain < 0 ? 0.0 : creditRemain);
       inv['_balanceAfter'] = _round2(runningOutstanding);
@@ -344,7 +344,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     for (final invAny in invoices) {
       final inv = (invAny as Map).cast<String, dynamic>();
       final payType = (inv['paymentType']?.toString().trim() ?? '');
-      if (payType == 'Credit' || payType == 'Cheque') {
+      if (payType == 'Credit') {
         final safe = _toDouble(inv['credit']);
         if (safe > 0) {
           unpaid++;
@@ -635,7 +635,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     final inv = (invAny as Map).cast<String, dynamic>();
 
     final paymentType = inv['paymentType']?.toString().trim() ?? 'Unknown';
-    final isCreditInv = paymentType == 'Credit' || paymentType == 'Cheque';
+    final isCreditInv = paymentType == 'Credit';
 
     final remainingCreditRaw = isCreditInv ? _toDouble(inv['credit']) : 0.0;
     final remainingCredit = remainingCreditRaw < 0 ? 0.0 : remainingCreditRaw;

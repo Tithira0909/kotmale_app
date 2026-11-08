@@ -172,7 +172,7 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
       final paymentType = (inv['paymentType']?.toString().trim() ?? '');
       final total = _toDouble(inv['total']);
 
-      if (paymentType == 'Credit' || paymentType == 'Cheque') {
+      if (paymentType == 'Credit') {
         map[shopKey]!["creditSales"] =
             (map[shopKey]!["creditSales"] as double) + total;
       } else {
