@@ -5,7 +5,8 @@ class DatabaseService {
 
   /// Save a new invoice
   Future<void> saveInvoice(Map<String, dynamic> invoice) async {
-    await _db.collection('invoices').add(invoice);
+    final String id = invoice['id'] ?? DateTime.now().millisecondsSinceEpoch.toString();
+    await _db.collection('invoices').doc(id).set(invoice, SetOptions(merge: true));
   }
 
   /// Get all invoices for a shop

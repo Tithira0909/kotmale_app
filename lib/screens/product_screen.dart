@@ -59,7 +59,12 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _products.isEmpty
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addProduct,
+        child: const Icon(Icons.add),
+      ),
+      body: _products.isEmpty
         ? const Center(
             child: Text(
               'No products available.\nTap the "+" button to add one.',
@@ -85,6 +90,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 ),
               );
             },
-          );
+          ),
+    );
   }
 }

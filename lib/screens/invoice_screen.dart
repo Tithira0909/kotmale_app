@@ -115,7 +115,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         final invShop = _normKey(inv['shopName']?.toString() ?? '');
         if (invShop != shopKey) continue;
         final payType = (inv['paymentType']?.toString().trim() ?? '');
-        if (payType == 'Credit') {
+        if (['Credit', 'Cheque'].contains(payType)) {
           final t = _toDouble(inv['total']);
           if (t > 0) creditInvoiceTotal += t;
         }
@@ -431,6 +431,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           final bal    = _round2(total > paid ? total - paid : 0.0);
           final change = _round2(paid  > total ? paid  - total : 0.0);
 
+
           // ── Cash button ─────────────────────────────────────────────────
           Widget cashChip() => Expanded(
                 child: GestureDetector(
@@ -466,6 +467,53 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                           'Cash',
                           style: TextStyle(
                             color: paymentType == 'Cash'
+                                ? Colors.white
+                                : _kInk,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+
+          // ── Cheque button ───────────────────────────────────────────────
+          Widget chequeChip() => Expanded(
+                child: GestureDetector(
+                  onTap: () => setSt(() {
+                    paymentType = 'Cheque';
+                    amountCtrl.text = payable.toStringAsFixed(2);
+                  }),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: paymentType == 'Cheque'
+                          ? _kPurple
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: paymentType == 'Cheque'
+                            ? _kPurple
+                            : const Color(0xFFCAC4D0),
+                        width: 1.5,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (paymentType == 'Cheque') ...[
+                          const Icon(Icons.check,
+                              color: Colors.white, size: 16),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          'Cheque',
+                          style: TextStyle(
+                            color: paymentType == 'Cheque'
                                 ? Colors.white
                                 : _kInk,
                             fontWeight: FontWeight.w700,
@@ -524,7 +572,6 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                   ),
                 ),
               );
-
           // ── Summary row ─────────────────────────────────────────────────
           Widget summRow(String label, double value,
               {bool bold = false, Color? vc}) {
@@ -573,7 +620,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: _kPurple.withOpacity(0.12),
+                          color: _kPurple.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.credit_card_rounded,
@@ -610,7 +657,9 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                   Row(
                     children: [
                       cashChip(),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
+                      chequeChip(),
+                      const SizedBox(width: 8),
                       creditChip(),
                     ],
                   ),
@@ -713,7 +762,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       final paid        = paidNow();
       final creditLeft  = _round2(payable > paid ? payable - paid : 0.0);
       final effectiveType = creditLeft <= 0
-          ? (paymentType == 'Credit' ? 'Credit' : 'Cash')
+          ? (paymentType == 'Credit' ? 'Credit' : paymentType)
           : (paid <= 0 ? 'Credit' : 'Split');
       await _saveInvoice(shop, date, effectiveType, paid, creditLeft);
     }
@@ -773,7 +822,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       'subtotal':        subtotal,
       'previousBalance': _previousCredit,
       // 'total' = this invoice only (no B/F) to avoid double-counting in credit sum.
-      'total':           creditOnInv > 0 ? creditOnInv : 0.0,
+      'total':           ['Credit', 'Cheque'].contains(effectiveType) ? (creditOnInv > 0 ? creditOnInv : invAmount) : (creditOnInv > 0 ? creditOnInv : 0.0),
       'grandTotal':      grandTotal,
       'paymentType':     effectiveType,
       'cashPaid':        cashReceived,
@@ -978,7 +1027,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         border:       Border.all(color: const Color(0xFFE7E0EC)),
         boxShadow: [
           BoxShadow(
-            color:      Colors.black.withOpacity(0.04),
+            color:      Colors.black.withValues(alpha: 0.04),
             blurRadius: 4,
             offset:     const Offset(0, 2),
           ),
@@ -1137,6 +1186,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
                   // ── Product dropdown ──────────────────────────────────
                   DropdownButtonFormField<Product>(
+                    // ignore: deprecated_member_use
                     value:          selectedProduct,
                     isExpanded:     true,
                     icon:           const Icon(Icons.arrow_drop_down, size: 28, color: _kGrey),
