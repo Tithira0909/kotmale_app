@@ -148,7 +148,7 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
       _applyFilters();
     } catch (e) {
       // ignore: avoid_print
-      print('❌ Error loading invoices: $e');
+      debugPrint('❌ Error loading invoices: $e');
       if (!mounted) return;
       setState(() {
         invoices = [];
@@ -406,7 +406,7 @@ class _InvoiceHistoryScreenState extends State<InvoiceHistoryScreen> {
                                     'LKR ${lineTotal.toStringAsFixed(2)}',
                                   ),
                                 );
-                              }).toList(),
+                              }),
                             ],
                           ),
                         );

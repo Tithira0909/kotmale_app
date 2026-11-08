@@ -35,14 +35,14 @@ class _CreditSummaryScreenState extends State<CreditSummaryScreen> {
           );
         });
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Server error: ${response.statusCode}")),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Connection failed: $e")));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Connection failed: $e")));
     } finally {
       setState(() => _loading = false);
     }

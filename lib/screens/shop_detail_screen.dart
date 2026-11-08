@@ -67,7 +67,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
   bool _isCredit(dynamic invAny) {
     if (invAny is! Map) return false;
-    return (invAny['paymentType']?.toString().trim() ?? '') == 'Credit';
+    return ['Credit', 'Cheque'].contains(invAny['paymentType']?.toString().trim() ?? '');
   }
 
   bool _isThisShop(dynamic invAny) {
@@ -162,7 +162,9 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
         c['creditApplied'] = _round2(_toDouble(c['creditApplied']));
       }
 
-      shopCollections.add(c);
+      if (!shopCollections.any((x) => x['date'] == c['date'] && x['amount'] == c['amount'])) {
+        shopCollections.add(c);
+      }
     }
 
     shopCollections.sort(
@@ -274,7 +276,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     for (final invAny in invoices) {
       final inv = (invAny as Map).cast<String, dynamic>();
       final payType = (inv['paymentType']?.toString().trim() ?? '');
-      if (payType == 'Credit') {
+      if (payType == 'Credit' || payType == 'Cheque') {
         final t = _toDouble(inv['total']);
         creditInvoiceTotal += (t < 0 ? 0.0 : t);
       }
@@ -326,7 +328,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     for (final invAny in invoices) {
       final inv = (invAny as Map).cast<String, dynamic>();
       final isCredit =
-          (inv['paymentType']?.toString().trim() ?? '') == 'Credit';
+          ['Credit', 'Cheque'].contains(inv['paymentType']?.toString().trim() ?? '');
       final creditRemain = isCredit ? _toDouble(inv['credit']) : 0.0;
       runningOutstanding += (creditRemain < 0 ? 0.0 : creditRemain);
       inv['_balanceAfter'] = _round2(runningOutstanding);
@@ -342,7 +344,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     for (final invAny in invoices) {
       final inv = (invAny as Map).cast<String, dynamic>();
       final payType = (inv['paymentType']?.toString().trim() ?? '');
-      if (payType == 'Credit') {
+      if (payType == 'Credit' || payType == 'Cheque') {
         final safe = _toDouble(inv['credit']);
         if (safe > 0) {
           unpaid++;
@@ -545,6 +547,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
   Future<void> _printShopSummary() async {
     if (shopInvoices.isEmpty && collectionHistory.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No data available to print')),
       );
@@ -554,6 +557,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     final prefs = await SharedPreferences.getInstance();
     final printerMac = prefs.getString('printer_mac');
     if (printerMac == null || printerMac.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please connect a printer first')),
       );
@@ -565,6 +569,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
       if (!isConnected) {
         final ok = await BluetoothService.connect(printerMac);
         if (!ok) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Failed to connect to Bluetooth printer'),
@@ -576,7 +581,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
       final buf = StringBuffer();
       buf.writeln('       Chinthaka Distributors');
-      buf.writeln('   Shop Account Summary Report');
+      buf.writeln('          Payment Statement');
       buf.writeln('------------------------------------');
       buf.writeln('Shop: ${widget.shopName}');
       buf.writeln(
@@ -604,13 +609,11 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
 
       await BluetoothService.printInvoice(buf.toString());
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('🖨️ Shop summary printed')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('🖨️ Shop summary printed')));
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Printer error: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Printer error: $e')));
     }
   }
 
@@ -632,7 +635,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
     final inv = (invAny as Map).cast<String, dynamic>();
 
     final paymentType = inv['paymentType']?.toString().trim() ?? 'Unknown';
-    final isCreditInv = paymentType == 'Credit';
+    final isCreditInv = paymentType == 'Credit' || paymentType == 'Cheque';
 
     final remainingCreditRaw = isCreditInv ? _toDouble(inv['credit']) : 0.0;
     final remainingCredit = remainingCreditRaw < 0 ? 0.0 : remainingCreditRaw;
@@ -687,7 +690,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
               ),
               trailing: Text('LKR ${lineTotal.toStringAsFixed(2)}'),
             );
-          }).toList(),
+          }),
           Padding(
             padding: const EdgeInsets.only(
               bottom: 10,
@@ -751,32 +754,54 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                 children: [
                   const SizedBox(height: 10),
                   Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    elevation: 3,
-                    color: Colors.blueGrey.shade50,
-                    child: ListTile(
-                      title: const Text(
-                        'Current Credit Balance',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        'LKR ${currentBalance.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: currentBalance > 0
-                              ? Colors.red
-                              : Colors.green[800],
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      trailing: ElevatedButton.icon(
-                        onPressed: _collectPayment,
-                        icon: const Icon(Icons.payments),
-                        label: const Text('Pay Credit'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
-                        ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    elevation: 0,
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Current Credit Balance',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'LKR ${currentBalance.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: currentBalance > 0
+                                      ? Colors.red.shade700
+                                      : Colors.green.shade800,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: _collectPayment,
+                                icon: const Icon(Icons.payments, size: 18),
+                                label: const Text('Pay Credit'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -864,7 +889,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -887,7 +912,7 @@ class _ShopDetailScreenState extends State<ShopDetailScreen> {
                       ),
                     )
                   else
-                    ...shopInvoices.map(_buildInvoiceCard).toList(),
+                    ...shopInvoices.map(_buildInvoiceCard),
                 ],
               ),
             ),

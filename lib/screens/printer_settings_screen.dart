@@ -45,6 +45,7 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
 
     bool isEnabled = await PrintBluetoothThermal.bluetoothEnabled;
     if (!isEnabled) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enable Bluetooth first')),
       );
@@ -70,7 +71,8 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
           selected = {'name': d.name, 'mac': d.macAdress};
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('✅ Connected and saved: ${d.name}')),
         );
       } else {
@@ -80,9 +82,8 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Connection error: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connection error: $e')));
     } finally {
       setState(() => _loading = false);
     }
@@ -91,9 +92,8 @@ class _PrinterSettingsScreenState extends State<PrinterSettingsScreen> {
   /// 🧾 Test print
   Future<void> _testPrint() async {
     if (selected == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('No printer connected')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No printer connected')));
       return;
     }
 
@@ -107,13 +107,13 @@ Thank you for testing!
 
     try {
       await BluetoothService.printInvoice(testText);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Test print sent to printer')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('❌ Test print failed: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ Test print failed: $e')));
     }
   }
 
@@ -124,9 +124,8 @@ Thank you for testing!
     await prefs.remove('printer_mac');
     setState(() => selected = null);
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('🗑 Printer removed')));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('🗑 Printer removed')));
   }
 
   @override

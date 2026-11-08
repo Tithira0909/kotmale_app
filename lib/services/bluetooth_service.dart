@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
 class BluetoothService {
@@ -8,7 +9,7 @@ class BluetoothService {
           await PrintBluetoothThermal.pairedBluetooths;
       return paired;
     } catch (e) {
-      print('Error scanning Bluetooth devices: $e');
+      debugPrint('Error scanning Bluetooth devices: $e');
       return [];
     }
   }
@@ -21,7 +22,7 @@ class BluetoothService {
       );
       return isConnected;
     } catch (e) {
-      print('Error connecting to printer: $e');
+      debugPrint('Error connecting to printer: $e');
       return false;
     }
   }
@@ -32,7 +33,7 @@ class BluetoothService {
       // The printer expects bytes, so we encode the text
       await PrintBluetoothThermal.writeBytes(text.codeUnits);
     } catch (e) {
-      print('Error printing invoice: $e');
+      debugPrint('Error printing invoice: $e');
     }
   }
 
@@ -41,7 +42,7 @@ class BluetoothService {
     try {
       await PrintBluetoothThermal.disconnect;
     } catch (e) {
-      print('Error disconnecting printer: $e');
+      debugPrint('Error disconnecting printer: $e');
     }
   }
 }

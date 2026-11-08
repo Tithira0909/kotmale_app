@@ -31,11 +31,11 @@ class KotmaleApp extends StatelessWidget {
           elevation: 0,
           scrolledUnderElevation: 2,
         ),
-        cardTheme: CardTheme(
+        cardTheme: const CardThemeData(
           elevation: 1.5,
-          shadowColor: Colors.black.withOpacity(0.06),
+          shadowColor: Color(0x0F000000),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
         ),
       ),
