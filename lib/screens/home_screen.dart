@@ -59,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
           if (item is! Map) continue;
           final dt = DateTime.tryParse(item['date']?.toString() ?? '') ??
               DateTime.fromMillisecondsSinceEpoch(0);
-          final totalVal = double.tryParse(item['total']?.toString() ?? '0') ?? 0.0;
+          final totalVal =
+              double.tryParse(item['total']?.toString() ?? '0') ?? 0.0;
 
           if (_isSameDay(dt, now)) {
             todaySalesSum += totalVal;
@@ -140,7 +141,8 @@ class _HomeScreenState extends State<HomeScreen> {
           content: Text('✅ Product "${newProduct.name}" added'),
           behavior: SnackBarBehavior.floating,
           backgroundColor: const Color(0xFF1E40AF),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
@@ -159,7 +161,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onRefresh: _loadSummaryData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

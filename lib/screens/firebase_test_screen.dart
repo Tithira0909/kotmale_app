@@ -12,8 +12,8 @@ class _FirebaseTestScreenState extends State<FirebaseTestScreen> {
   final TextEditingController _msgCtrl = TextEditingController();
 
   /// Reference to Firestore collection
-  final CollectionReference _testCollection = FirebaseFirestore.instance
-      .collection('test_messages');
+  final CollectionReference _testCollection =
+      FirebaseFirestore.instance.collection('test_messages');
 
   Future<void> _sendMessage() async {
     final text = _msgCtrl.text.trim();

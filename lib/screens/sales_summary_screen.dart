@@ -142,9 +142,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
     final collectionStr = prefs.getString('collection_history');
 
     final List invoices = invoiceStr != null ? jsonDecode(invoiceStr) : [];
-    final List collections = collectionStr != null
-        ? jsonDecode(collectionStr)
-        : [];
+    final List collections =
+        collectionStr != null ? jsonDecode(collectionStr) : [];
 
     final Map<String, Map<String, dynamic>> map = {};
 
@@ -246,7 +245,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Please connect a printer first in Printer Settings'),
+          content:
+              Text('⚠️ Please connect a printer first in Printer Settings'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -357,7 +357,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
     }
   }
 
-  double get grandTotalRevenue => totalCash + totalCollection + totalCreditSales;
+  double get grandTotalRevenue =>
+      totalCash + totalCollection + totalCreditSales;
 
   @override
   Widget build(BuildContext context) {
@@ -411,8 +412,8 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
                               ? SliverToBoxAdapter(child: _buildTableView())
                               : SliverList(
                                   delegate: SliverChildBuilderDelegate(
-                                    (ctx, i) =>
-                                        _buildShopSalesCard(_filteredRows[i], i),
+                                    (ctx, i) => _buildShopSalesCard(
+                                        _filteredRows[i], i),
                                     childCount: _filteredRows.length,
                                   ),
                                 ),
@@ -726,7 +727,9 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
             ),
             child: IconButton(
               icon: Icon(
-                _isTableView ? Icons.grid_view_rounded : Icons.table_chart_rounded,
+                _isTableView
+                    ? Icons.grid_view_rounded
+                    : Icons.table_chart_rounded,
                 color: Colors.indigo,
               ),
               tooltip: _isTableView ? 'Switch to Cards' : 'Switch to Table',
@@ -762,97 +765,97 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
         borderRadius: BorderRadius.circular(16),
         child: LayoutBuilder(
           builder: (context, constraints) {
-          final narrow = constraints.maxWidth < 420;
-          _narrowTable = narrow;
-          // Fit the screen; only scroll horizontally on very small widths.
-          final tableWidth =
-              constraints.maxWidth < 340 ? 340.0 : constraints.maxWidth;
-          return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: tableWidth,
-            child: Table(
-              columnWidths: {
-                0: FixedColumnWidth(narrow ? 30 : 50),
-                1: const FlexColumnWidth(1.4),
-                2: const FlexColumnWidth(1.3),
-                3: const FlexColumnWidth(1.3),
-              },
-              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-              children: [
-                // Header Row
-                TableRow(
-                  decoration: BoxDecoration(color: headerBg),
+            final narrow = constraints.maxWidth < 420;
+            _narrowTable = narrow;
+            // Fit the screen; only scroll horizontally on very small widths.
+            final tableWidth =
+                constraints.maxWidth < 340 ? 340.0 : constraints.maxWidth;
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: tableWidth,
+                child: Table(
+                  columnWidths: {
+                    0: FixedColumnWidth(narrow ? 30 : 50),
+                    1: const FlexColumnWidth(1.4),
+                    2: const FlexColumnWidth(1.3),
+                    3: const FlexColumnWidth(1.3),
+                  },
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                   children: [
-                    _cell('#', header: true, color: Colors.white),
-                    _cell('Shop Name', header: true, color: Colors.white),
-                    _cell(
-                      narrow ? 'Cash/Col' : 'Cash & Collection',
-                      header: true,
-                      right: true,
-                      color: Colors.white,
+                    // Header Row
+                    TableRow(
+                      decoration: BoxDecoration(color: headerBg),
+                      children: [
+                        _cell('#', header: true, color: Colors.white),
+                        _cell('Shop Name', header: true, color: Colors.white),
+                        _cell(
+                          narrow ? 'Cash/Col' : 'Cash & Collection',
+                          header: true,
+                          right: true,
+                          color: Colors.white,
+                        ),
+                        _cell(
+                          narrow ? 'Credit' : 'Credit Issued',
+                          header: true,
+                          right: true,
+                          color: Colors.white,
+                        ),
+                      ],
                     ),
-                    _cell(
-                      narrow ? 'Credit' : 'Credit Issued',
-                      header: true,
-                      right: true,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-                // Rows
-                ...List.generate(_filteredRows.length, (i) {
-                  final r = _filteredRows[i];
-                  final shop = r["shopName"]?.toString() ?? 'Unknown';
-                  final cashCol = _cashCollection(r);
-                  final credit = (r["creditSales"] as double);
-                  final bg = (i % 2 == 0) ? zebraA : zebraB;
+                    // Rows
+                    ...List.generate(_filteredRows.length, (i) {
+                      final r = _filteredRows[i];
+                      final shop = r["shopName"]?.toString() ?? 'Unknown';
+                      final cashCol = _cashCollection(r);
+                      final credit = (r["creditSales"] as double);
+                      final bg = (i % 2 == 0) ? zebraA : zebraB;
 
-                  return TableRow(
-                    decoration: BoxDecoration(color: bg),
-                    children: [
-                      _cell('${i + 1}'),
-                      _cell(shop, bold: true),
-                      _cell(
-                        _formatAmt(cashCol),
-                        right: true,
-                        color: Colors.teal.shade800,
-                      ),
-                      _cell(
-                        _formatAmt(credit),
-                        right: true,
-                        bold: credit > 0,
-                        color: credit > 0
-                            ? Colors.red.shade700
-                            : Colors.grey.shade600,
-                      ),
-                    ],
-                  );
-                }),
-                // Total Summary Row
-                TableRow(
-                  decoration: BoxDecoration(color: totalBg),
-                  children: [
-                    _cell('', header: true),
-                    _cell('TOTAL', header: true, bold: true),
-                    _cell(
-                      _formatAmt(totalCashCol),
-                      header: true,
-                      right: true,
-                      color: Colors.teal.shade900,
-                    ),
-                    _cell(
-                      _formatAmt(totalCreditSales),
-                      header: true,
-                      right: true,
-                      color: Colors.red.shade900,
+                      return TableRow(
+                        decoration: BoxDecoration(color: bg),
+                        children: [
+                          _cell('${i + 1}'),
+                          _cell(shop, bold: true),
+                          _cell(
+                            _formatAmt(cashCol),
+                            right: true,
+                            color: Colors.teal.shade800,
+                          ),
+                          _cell(
+                            _formatAmt(credit),
+                            right: true,
+                            bold: credit > 0,
+                            color: credit > 0
+                                ? Colors.red.shade700
+                                : Colors.grey.shade600,
+                          ),
+                        ],
+                      );
+                    }),
+                    // Total Summary Row
+                    TableRow(
+                      decoration: BoxDecoration(color: totalBg),
+                      children: [
+                        _cell('', header: true),
+                        _cell('TOTAL', header: true, bold: true),
+                        _cell(
+                          _formatAmt(totalCashCol),
+                          header: true,
+                          right: true,
+                          color: Colors.teal.shade900,
+                        ),
+                        _cell(
+                          _formatAmt(totalCreditSales),
+                          header: true,
+                          right: true,
+                          color: Colors.red.shade900,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          );
+              ),
+            );
           },
         ),
       ),
@@ -963,50 +966,51 @@ class _SalesSummaryScreenState extends State<SalesSummaryScreen> {
           SizedBox(
             width: double.infinity,
             child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            spacing: 12,
-            runSpacing: 6,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.account_balance_wallet,
-                    size: 14,
-                    color: Colors.teal,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Cash & Col: ${_formatLkr(cashCol)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.teal.shade800,
-                      fontWeight: FontWeight.w600,
+              alignment: WrapAlignment.spaceBetween,
+              spacing: 12,
+              runSpacing: 6,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.account_balance_wallet,
+                      size: 14,
+                      color: Colors.teal,
                     ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.credit_score,
-                    size: 14,
-                    color: credit > 0 ? Colors.red : Colors.grey,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Credit: ${_formatLkr(credit)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: credit > 0 ? Colors.red.shade700 : Colors.grey,
-                      fontWeight: credit > 0 ? FontWeight.bold : FontWeight.normal,
+                    const SizedBox(width: 4),
+                    Text(
+                      'Cash & Col: ${_formatLkr(cashCol)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.teal.shade800,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.credit_score,
+                      size: 14,
+                      color: credit > 0 ? Colors.red : Colors.grey,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Credit: ${_formatLkr(credit)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: credit > 0 ? Colors.red.shade700 : Colors.grey,
+                        fontWeight:
+                            credit > 0 ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

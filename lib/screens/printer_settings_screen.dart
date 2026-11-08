@@ -174,8 +174,7 @@ Thank you for testing!
                         trailing: ElevatedButton(
                           onPressed: () => _connectPrinter(d),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                (selected != null &&
+                            backgroundColor: (selected != null &&
                                     selected!['mac'] == d.macAdress)
                                 ? Colors.green
                                 : Colors.blue,

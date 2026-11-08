@@ -1,0 +1,17 @@
+<<<<<<< SEARCH
+      builder: (ctx) => AlertDialog(
+        title: const Text('Payment Statement'),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+=======
+      builder: (ctx) => AlertDialog(
+        title: const Text('Payment Statement'),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+>>>>>>> REPLACE

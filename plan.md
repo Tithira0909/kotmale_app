@@ -1,0 +1,7 @@
+1. **Fix `main.dart` theme**: The user mentions fixing the payment popup overflow issue. I already adjusted the `CardTheme` in `main.dart` to use `const CardThemeData(...)` which resolved a Flutter build error that was previously there, maybe this doesn't fully fix the overflow.
+2. **Shop Detail Screen (Payment Popup)**: Updated the `_collectPayment` function in `lib/screens/shop_detail_screen.dart` to include a Dropdown for Cash/Cheque. Handled saving Cheque transactions where we wait for clearing before applying it to the balance, while Cash deducts immediately. This meets the criteria: "When Cash is received, deduct the paid amount from the outstanding balance. For Cheque, deduct only after the cheque is cleared."
+3. **Print Payment Statement**: Updated `_printShopSummary` in `lib/screens/shop_detail_screen.dart` to rename the report to "Payment Statement" and added a "Recent Payments" section to match the "professional Print Payment Statement feature" requirement.
+4. **Invoice Screen (Credit)**: Checked `lib/screens/invoice_screen.dart`. When **Credit** is selected, the code already automatically adds the invoice total to the shop's outstanding credit balance by setting `creditAmount` to the invoice total, which gets added to the balance.
+5. **Pre-commit Instructions**: Ensure the app passes tests and any pre-commit checks. I will call `pre_commit_instructions`.
+
+Let's double check if there's any payment popup overflow issue.
